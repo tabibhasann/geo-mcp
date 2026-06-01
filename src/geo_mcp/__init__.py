@@ -5,4 +5,4 @@ spatial geometry operations, OpenStreetMap querying, and
 raster/vector inspection — all returning clean GeoJSON.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
