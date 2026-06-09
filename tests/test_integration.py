@@ -12,7 +12,7 @@ async def call_tool(name: str, arguments: dict) -> dict | list | str | float | b
     assert result, f"{name} returned no content"
 
     content = getattr(result, "content", result)
-    while isinstance(content, list):
+    while isinstance(content, (list, tuple)):
         assert content, f"{name} returned empty content"
         content = content[0]
 
