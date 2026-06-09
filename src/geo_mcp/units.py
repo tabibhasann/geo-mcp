@@ -61,10 +61,7 @@ def geodesic_area(geom, unit: str = "m2") -> float:
     except Exception:
         # fallback: reproject to equal area
         lon, lat = get_centroid_lonlat(geom)
-        crs_str = (
-            f"+proj=laea +lat_0={lat} +lon_0={lon} "
-            "+x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
-        )
+        crs_str = f"+proj=laea +lat_0={lat} +lon_0={lon} +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
         transformer = Transformer.from_crs("EPSG:4326", crs_str, always_xy=True)
         geom_json = json.loads(to_geojson(geom))
         _transform_coords(geom_json, transformer)

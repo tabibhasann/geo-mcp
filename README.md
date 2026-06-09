@@ -1,88 +1,129 @@
 # mcp-geo
 
-A batteries-included geospatial server for the Model Context Protocol.  
-It gives AI agents real access to geocoding, routing, OpenStreetMap querying,  
-and spatial geometry operations — all returning clean GeoJSON.
+A geospatial MCP server that gives agents dependable GIS tools: geocoding,
+routing, OpenStreetMap queries, geometry operations, file inspection, raster
+sampling, elevation, isochrones, static maps, and workspace storage.
 
 [![PyPI version](https://img.shields.io/pypi/v/mcp-geo.svg)](https://pypi.org/project/mcp-geo/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Quickstart
+## Why it exists
 
-No configuration required — it runs out of the box with public OSM services.
+Geospatial work usually requires several specialized libraries and services.
+`mcp-geo` packages common GIS operations behind stable MCP tools so an agent can
+compose real spatial workflows instead of generating one-off scripts.
+
+Example workflow:
+
+1. `geocode` a place such as "Buriganga River, Dhaka".
+2. `buffer` the returned point by 2 km.
+3. `osm_features` for `{"amenity": "hospital"}` inside that area.
+4. `distance` or `nearest_neighbor` to rank the results.
+5. `static_map` or `save_map` to create a visual preview.
+
+## Installation
 
 ```bash
 pip install mcp-geo
 ```
 
-Add it to your MCP client:
+For local GIS files:
+
+```bash
+pip install "mcp-geo[files,raster,visual]"
+```
+
+## MCP client config
 
 ```json
 {
   "mcpServers": {
-    "geo": { "command": "uvx", "args": ["mcp-geo"] }
+    "geo": {
+      "command": "uvx",
+      "args": ["mcp-geo"]
+    }
   }
 }
 ```
 
-That is it. Your AI agent now has 20+ geospatial tools available.
+The default transport is stdio. HTTP and SSE are also available:
+
+```bash
+mcp-geo --http --host 127.0.0.1 --port 8000
+mcp-geo --sse --host 127.0.0.1 --port 8000
+```
 
 ## Tools
 
-**Local geometry (no network)**
-`buffer` · `distance` · `area` · `length` · `centroid` · `simplify` · `convex_hull` · `bbox` · `spatial_predicate` · `transform_crs` · `validate_geojson`
+**Geometry**
 
-**Geocoding & reverse geocoding (Nominatim)**
-`geocode` · `reverse_geocode`
+`buffer`, `distance`, `area`, `length`, `centroid`, `simplify`, `convex_hull`,
+`bbox`, `spatial_predicate`, `transform_crs`, `validate_geojson`
 
-**OpenStreetMap querying (Overpass)**
-`build_overpass_query` · `osm_features` · `overpass_query`
+**Geocoding and OSM**
 
-**Routing (OSRM)**
-`route` · `route_matrix` · `nearest_road`
+`geocode`, `reverse_geocode`, `build_overpass_query`, `osm_features`,
+`overpass_query`
 
-**File inspection (optional extras)**
-`vector_info` · `vector_read` (`pip install mcp-geo[files]`)  
-`raster_info` · `zonal_stats` · `sample_raster` (`pip install mcp-geo[raster]`)
+**Routing, elevation, and accessibility**
 
-All network tools respect rate limits and use a proper User-Agent header.
+`route`, `route_matrix`, `nearest_road`, `elevation`, `elevation_profile`,
+`isochrone`
 
-## Example: an agent answering a real spatial question
+**Files and rasters**
 
-*"Find hospitals within 2 km of the Buriganga river in Dhaka"*
+`vector_info`, `vector_read`, `raster_info`, `zonal_stats`, `sample_raster`
 
-The agent composes four tools:
-1. `geocode("Buriganga River, Dhaka")` → coordinates
-2. `buffer(river, 2000)` → 2 km polygon
-3. `osm_features(buffer, {"amenity": "hospital"})` → GeoJSON of hospitals
-4. `distance` → sort by proximity
+**Advanced workflows**
 
-The agent handles the reasoning — mcp-geo handles the execution reliably.
+`build_spatial_index`, `spatial_query`, `spatial_join`, `cached_geocode`,
+`batch_geocode`, `nearest_neighbor`, `repair_geometry`, `validate_geometry`
+
+**Workspace and visualization**
+
+`workspace_store`, `workspace_get`, `workspace_list`, `workspace_clear`,
+`workspace_rename`, `static_map`, `save_map`, `suggest_tools`, `list_all_tools`
 
 ## Configuration
 
-Everything works without any setup. If you need to point at self-hosted
-services (higher rate limits, air-gapped environments), set these environment
-variables:
+The server works without configuration by using public geospatial services.
+For production use, self-host high-volume providers where possible.
 
-| Variable | Default |
-|----------|---------|
-| `GEO_MCP_NOMINATIM_URL` | `https://nominatim.openstreetmap.org` |
-| `GEO_MCP_OSRM_URL` | `https://router.project-osrm.org` |
-| `GEO_MCP_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` |
+| Variable | Default | Description |
+| --- | --- | --- |
+| `GEO_MCP_NOMINATIM_URL` | `https://nominatim.openstreetmap.org` | Forward and reverse geocoding |
+| `GEO_MCP_OSRM_URL` | `https://router.project-osrm.org` | Routing and nearest-road lookup |
+| `GEO_MCP_OVERPASS_URL` | `https://overpass-api.de/api/interpreter` | OpenStreetMap feature queries |
+| `GEO_MCP_ORS_API_KEY` | unset | OpenRouteService key for isochrones |
+| `GEO_MCP_HTTP_RETRIES` | `3` | HTTP retry count |
 
-Rate limiting is enforced client-side — **1 request per second** to Nominatim
-by default. For production use, consider running your own Nominatim, OSRM,
-and Overpass instances.
+`mcp-geo` sends a project-specific User-Agent and rate-limits Nominatim calls to
+one request per second by default.
 
 ## Development
 
 ```bash
-pip install -e ".[dev]"
-ruff check src/ tests/
-mypy src/
-pytest --cov=geo_mcp tests/ -v
+git clone https://github.com/tabibhasann/geo-mcp.git
+cd geo-mcp
+uv sync --group dev
+uv run ruff check src/ tests/
+uv run mypy src/
+uv run pytest
+```
+
+Optional GIS dependencies can be tested with:
+
+```bash
+uv sync --group dev --extra files --extra raster --extra visual
+uv run pytest
+```
+
+## Docker
+
+```bash
+docker build -t mcp-geo .
+docker run --rm -p 8000:8000 mcp-geo mcp-geo --http --host 0.0.0.0 --port 8000
 ```
 
 ## License

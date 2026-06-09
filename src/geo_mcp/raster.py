@@ -8,10 +8,7 @@ def _check_raster_deps() -> None:
         import rasterio  # noqa: F401
         import rasterstats  # noqa: F401
     except ImportError as e:
-        raise ImportError(
-            "Raster support requires extra: [raster]. "
-            "Install with: pip install mcp-geo[raster]"
-        ) from e
+        raise ImportError("Raster support requires extra: [raster]. Install with: pip install mcp-geo[raster]") from e
 
 
 @safe_tool
@@ -54,6 +51,7 @@ def zonal_stats(
         stats = ["min", "max", "mean", "count"]
 
     import json as _json
+
     zones = _json.loads(zones_geojson) if isinstance(zones_geojson, str) else zones_geojson
 
     results = rzs(zones, raster_path, stats=stats, geojson_out=False)
@@ -80,18 +78,16 @@ def sample_raster(path: str, points_geojson: str) -> list[dict]:
     elif points.get("type") == "MultiPoint":
         coords = [tuple(c) for c in points["coordinates"]]
     elif points.get("type") == "FeatureCollection":
-        coords = [
-            tuple(f["geometry"]["coordinates"])
-            for f in points["features"]
-        ]
+        coords = [tuple(f["geometry"]["coordinates"]) for f in points["features"]]
 
     results = []
     with rasterio.open(path) as src:
         for x, y in coords:
             row, col = src.index(x, y)
             if 0 <= row < src.height and 0 <= col < src.width:
-                values = [float(src.read(i + 1, window=((row, row + 1), (col, col + 1)))[0, 0])
-                         for i in range(src.count)]
+                values = [
+                    float(src.read(i + 1, window=((row, row + 1), (col, col + 1)))[0, 0]) for i in range(src.count)
+                ]
             else:
                 values = None
             results.append({"lon": x, "lat": y, "values": values})

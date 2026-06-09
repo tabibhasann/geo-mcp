@@ -105,9 +105,7 @@ def spatial_predicate(geojson_a: str, geojson_b: str, op: str) -> bool:
     crosses, disjoint, equals.
     """
     if op not in _PREDICATE_OPS:
-        raise ValueError(
-            f"Unknown spatial predicate: {op}. Supported: {list(_PREDICATE_OPS)}"
-        )
+        raise ValueError(f"Unknown spatial predicate: {op}. Supported: {list(_PREDICATE_OPS)}")
     geom_a = parse(geojson_a)
     geom_b = parse(geojson_b)
     return _PREDICATE_OPS[op](geom_a, geom_b)

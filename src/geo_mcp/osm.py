@@ -12,6 +12,8 @@ import httpx
 from .config import settings
 from .errors import async_safe_tool, safe_tool
 
+_ALLOWED_ELEMENT_TYPES = {"node", "way", "relation"}
+
 
 @safe_tool
 def build_overpass_query(
@@ -32,15 +34,18 @@ def build_overpass_query(
     """
     if element_types is None:
         element_types = ["node", "way", "relation"]
+    element_types = _validate_element_types(element_types)
 
     # Build tag filter
     tag_filters = []
     if isinstance(tags, dict):
         for k, v in tags.items():
+            key = _escape_ql(str(k))
             if v:
-                tag_filters.append(f'["{k}"="{v}"]')
+                value = _escape_ql(str(v))
+                tag_filters.append(f'["{key}"="{value}"]')
             else:
-                tag_filters.append(f'["{k}"]')
+                tag_filters.append(f'["{key}"]')
     else:
         raise ValueError("tags must be a dict of OSM key-value pairs")
 
@@ -67,25 +72,35 @@ def build_overpass_query(
     else:
         raise ValueError("area must be a bbox [s,w,n,e], a place name string, or GeoJSON polygon")
 
-    types_str = " ".join(element_types)
+    # Build union query for all element types
+    queries = []
+    for etype in element_types:
+        queries.append(f"  {etype}{tag_str}{area_clause};")
+    union_block = "(\n" + "\n".join(queries) + "\n)"
+
     return f"""
 [out:json][timeout:{int(settings.overpass_timeout)}];
-{types_str}{tag_str}{area_clause};
-out body {settings.osm_result_limit};
-out skel qt;
+{union_block};
+out center body {settings.osm_result_limit};
 """
 
 
 def _build_area_query(place_name: str, tag_str: str, element_types: list[str]) -> str:
     """Build a query using an area by name (assumes nominatim resolves first)."""
-    types_str = " ".join(element_types)
-    escaped = place_name.replace('"', '\\"')
+    escaped = _escape_ql(place_name)
+
+    # Build union query for all element types
+    queries = []
+    for etype in element_types:
+        queries.append(f"  {etype}{tag_str}(area.searchArea);")
+
+    union_block = "(\n" + "\n".join(queries) + "\n)"
+
     return f"""
 [out:json][timeout:{int(settings.overpass_timeout)}];
 area["name"="{escaped}"]->.searchArea;
-{types_str}{tag_str}(area.searchArea);
-out body {settings.osm_result_limit};
-out skel qt;
+{union_block};
+out center body {settings.osm_result_limit};
 """
 
 
@@ -96,13 +111,27 @@ def _build_poly_query(geojson: dict, tag_str: str, element_types: list[str]) -> 
         raise ValueError("Could not extract coordinates from GeoJSON")
 
     poly = " ".join(f"{lat} {lon}" for lon, lat in coords)
-    types_str = " ".join(element_types)
+    queries = []
+    for etype in element_types:
+        queries.append(f'  {etype}{tag_str}(poly:"{poly}");')
+    union_block = "(\n" + "\n".join(queries) + "\n)"
     return f"""
 [out:json][timeout:{int(settings.overpass_timeout)}];
-{types_str}{tag_str}(poly:"{poly}");
-out body {settings.osm_result_limit};
-out skel qt;
+{union_block};
+out center body {settings.osm_result_limit};
 """
+
+
+def _escape_ql(value: str) -> str:
+    """Escape string values embedded in Overpass QL literals."""
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _validate_element_types(element_types: list[str]) -> list[str]:
+    invalid = [etype for etype in element_types if etype not in _ALLOWED_ELEMENT_TYPES]
+    if invalid:
+        raise ValueError(f"Unsupported element type(s): {invalid}. Supported: {sorted(_ALLOWED_ELEMENT_TYPES)}")
+    return element_types
 
 
 def _extract_coords(geojson: dict) -> list[tuple[float, float]]:
@@ -166,6 +195,11 @@ async def osm_features(
     tags: JSON object of OSM tag key-value pairs, e.g., '{"amenity":"hospital"}'.
 
     Returns a GeoJSON FeatureCollection.
+
+    Features:
+    - Automatic bbox splitting for large areas (avoids Overpass limits)
+    - Shared HTTP retry transport
+    - Result validation and warnings
     """
     import json as _json
 
@@ -174,11 +208,61 @@ async def osm_features(
     with contextlib.suppress(_json.JSONDecodeError, TypeError):
         area_val = _json.loads(area)
 
+    # Check if area is a bbox and potentially too large
+    if isinstance(area_val, list) and len(area_val) == 4:
+        south, west, north, east = area_val
+        bbox_width = east - west
+        bbox_height = north - south
+
+        # If bbox is very large (>1 degree), split into quadrants
+        if bbox_width > 1.0 or bbox_height > 1.0:
+            return await _query_large_bbox(area_val, tags_dict, limit)
+
     ql = build_overpass_query(area_val, tags_dict)
     if isinstance(ql, dict) and "error" in ql:
         return ql
 
     return await overpass_query(ql, limit=limit)
+
+
+async def _query_large_bbox(bbox: list, tags_dict: dict, limit: int) -> dict:
+    """Query a large bbox by splitting into quadrants and merging results."""
+    south, west, north, east = bbox
+    mid_lat = (south + north) / 2
+    mid_lon = (west + east) / 2
+
+    quadrants = [
+        [south, west, mid_lat, mid_lon],  # SW
+        [south, mid_lon, mid_lat, east],  # SE
+        [mid_lat, west, north, mid_lon],  # NW
+        [mid_lat, mid_lon, north, east],  # NE
+    ]
+
+    all_features = []
+    seen_ids = set()
+
+    for quad in quadrants:
+        ql = build_overpass_query(quad, tags_dict)
+        if isinstance(ql, dict) and "error" in ql:
+            continue
+
+        result = await overpass_query(ql, limit=limit)
+        if isinstance(result, dict) and "features" in result:
+            for feature in result["features"]:
+                feature_id = feature.get("id")
+                if feature_id and feature_id not in seen_ids:
+                    seen_ids.add(feature_id)
+                    all_features.append(feature)
+
+    return {
+        "type": "FeatureCollection",
+        "features": all_features[:limit],
+        "metadata": {
+            "total_elements": len(all_features),
+            "returned": min(len(all_features), limit),
+            "query_strategy": "split_bbox",
+        },
+    }
 
 
 @async_safe_tool
@@ -218,8 +302,6 @@ async def overpass_query(ql_string: str, *, limit: int = 200) -> dict:
     }
     if truncated:
         result["metadata"]["truncated"] = True
-        result["metadata"]["note"] = (
-            f"Results truncated to {result_limit}. Narrow your query to get more."
-        )
+        result["metadata"]["note"] = f"Results truncated to {result_limit}. Narrow your query to get more."
 
     return result

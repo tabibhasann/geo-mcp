@@ -1,4 +1,4 @@
-"""Shared async HTTP client with rate limiting."""
+"""Shared async HTTP client with rate limiting and retry logic."""
 
 import asyncio
 import time
@@ -26,10 +26,12 @@ class RateLimiter:
 
 
 def get_client() -> httpx.AsyncClient:
-    """Create a configured async HTTP client."""
+    """Create a configured async HTTP client with retry transport."""
+    transport = httpx.AsyncHTTPTransport(retries=settings.http_retries)
     return httpx.AsyncClient(
         headers={"User-Agent": settings.user_agent},
         timeout=httpx.Timeout(30.0),
+        transport=transport,
     )
 
 

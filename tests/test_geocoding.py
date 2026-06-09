@@ -17,17 +17,19 @@ def nominatim_mock(respx_mock: MockRouter):
 class TestGeocode:
     @pytest.mark.asyncio
     async def test_geocode_success(self, nominatim_mock):
-        nominatim_mock.get(f"{NOMINATIM_URL}/search").respond(json=[
-            {
-                "lat": "23.8103",
-                "lon": "90.4125",
-                "display_name": "Dhaka, Bangladesh",
-                "boundingbox": ["23.6", "24.0", "90.2", "90.6"],
-                "osm_type": "relation",
-                "osm_id": 123456,
-                "importance": 0.9,
-            }
-        ])
+        nominatim_mock.get(f"{NOMINATIM_URL}/search").respond(
+            json=[
+                {
+                    "lat": "23.8103",
+                    "lon": "90.4125",
+                    "display_name": "Dhaka, Bangladesh",
+                    "boundingbox": ["23.6", "24.0", "90.2", "90.6"],
+                    "osm_type": "relation",
+                    "osm_id": 123456,
+                    "importance": 0.9,
+                }
+            ]
+        )
 
         result = await geocode("Dhaka")
         assert isinstance(result, list) or "error" not in result
@@ -49,12 +51,14 @@ class TestGeocode:
     async def test_reverse_geocode(self, nominatim_mock):
         nominatim_mock.get(
             f"{NOMINATIM_URL}/reverse",
-        ).respond(json={
-            "lat": "23.8103",
-            "lon": "90.4125",
-            "display_name": "123 Example Street, Dhaka",
-            "address": {"road": "Example Street", "city": "Dhaka"},
-        })
+        ).respond(
+            json={
+                "lat": "23.8103",
+                "lon": "90.4125",
+                "display_name": "123 Example Street, Dhaka",
+                "address": {"road": "Example Street", "city": "Dhaka"},
+            }
+        )
 
         result = await reverse_geocode(23.8103, 90.4125)
         assert isinstance(result, dict)

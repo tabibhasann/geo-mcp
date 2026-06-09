@@ -1,9 +1,9 @@
 """Geocoding tools using Nominatim (OpenStreetMap)."""
 
-
 from .config import settings
 from .errors import async_safe_tool
 from .http import get_client, nominatim_limiter
+from .validation import validate_coords
 
 
 @async_safe_tool
@@ -39,8 +39,12 @@ async def geocode(
             "name": r.get("display_name", ""),
             "lat": float(r["lat"]),
             "lon": float(r["lon"]),
-            "bbox": [float(r["boundingbox"][2]), float(r["boundingbox"][0]),
-                     float(r["boundingbox"][3]), float(r["boundingbox"][1])],
+            "bbox": [
+                float(r["boundingbox"][2]),
+                float(r["boundingbox"][0]),
+                float(r["boundingbox"][3]),
+                float(r["boundingbox"][1]),
+            ],
             "osm_type": r.get("osm_type"),
             "osm_id": r.get("osm_id"),
             "importance": float(r.get("importance", 0)),
@@ -60,6 +64,7 @@ async def reverse_geocode(
 
     Returns a structured address and display name.
     """
+    validate_coords(lon, lat)
     params: dict[str, str | int | float] = {
         "lat": lat,
         "lon": lon,

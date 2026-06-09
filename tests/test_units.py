@@ -1,6 +1,5 @@
 """Tests for unit conversions and geodesic calculations."""
 
-
 import pytest
 
 from geo_mcp.units import (
@@ -41,24 +40,28 @@ class TestUnitConversions:
 class TestUTMZone:
     def test_bangladesh_utm(self):
         import shapely
+
         geom = shapely.from_wkt("POINT(90.4 23.8)")
         epsg = pick_utm_epsg(geom)
         assert epsg.startswith("EPSG:326"), f"Northern hemisphere should be 326xx, got {epsg}"
 
     def test_jakarta_utm(self):
         import shapely
+
         geom = shapely.from_wkt("POINT(106.8 -6.2)")
         epsg = pick_utm_epsg(geom)
         assert epsg.startswith("EPSG:327"), f"Southern hemisphere should be 327xx, got {epsg}"
 
     def test_london_utm(self):
         import shapely
+
         geom = shapely.from_wkt("POINT(-0.1 51.5)")
         epsg = pick_utm_epsg(geom)
         assert epsg == "EPSG:32630"
 
     def test_los_angeles_utm(self):
         import shapely
+
         geom = shapely.from_wkt("POINT(-118.2 34.0)")
         epsg = pick_utm_epsg(geom)
         assert epsg == "EPSG:32611"
@@ -67,12 +70,14 @@ class TestUTMZone:
 class TestGeodesicArea:
     def test_1deg_box_near_equator(self):
         import shapely
+
         geom = shapely.from_wkt("POLYGON((90 0, 91 0, 91 1, 90 1, 90 0))")
         area_km2 = geodesic_area(geom, "km2")
         assert 10000 < area_km2 < 15000
 
     def test_point_zero_area(self):
         import shapely
+
         geom = shapely.from_wkt("POINT(90 23)")
         assert geodesic_area(geom) == 0.0
 

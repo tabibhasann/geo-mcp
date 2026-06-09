@@ -11,10 +11,6 @@ Thanks for your interest in contributing!
 5. Run: `ruff check src/ tests/ && mypy src/ && pytest tests/ -v`
 6. Submit a PR
 
-## AI-assisted maintenance
-
-This project uses AI tools for first-pass PR review, test generation, and release note drafting. **All AI output is reviewed by human maintainers** before merge or release. AI is used solely on authorized repositories.
-
 ## Tool conventions
 
 - New tools go in dedicated modules under `src/geo_mcp/`

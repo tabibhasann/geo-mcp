@@ -5,17 +5,34 @@ import json
 from .config import settings
 from .errors import async_safe_tool
 from .http import get_client
+from .validation import validate_coords
 
 
-def _to_lonlat_string(coords: str | list) -> str:
-    """Convert a list of [lon, lat] pairs or JSON string to an OSRM coordinate string."""
-    parsed: list = json.loads(coords) if isinstance(coords, str) else coords
-    return ";".join(f"{c[0]},{c[1]}" for c in parsed)
+def _parse_coordinates(coords: str | list) -> list[list[float]]:
+    """Parse and validate a list of [lon, lat] coordinates."""
+    parsed = json.loads(coords) if isinstance(coords, str) else coords
+    if not isinstance(parsed, list) or not parsed:
+        raise ValueError("Coordinates must be a non-empty array of [lon, lat] pairs")
+
+    coordinates = []
+    for coord in parsed:
+        if not isinstance(coord, list | tuple) or len(coord) != 2:
+            raise ValueError("Each coordinate must be [lon, lat]")
+        lon = float(coord[0])
+        lat = float(coord[1])
+        validate_coords(lon, lat)
+        coordinates.append([lon, lat])
+    return coordinates
+
+
+def _to_lonlat_string(coords: list[list[float]]) -> str:
+    """Convert [lon, lat] pairs to an OSRM coordinate string."""
+    return ";".join(f"{lon},{lat}" for lon, lat in coords)
 
 
 @async_safe_tool
 async def route(
-    coordinates: str,
+    coordinates: str | list,
     *,
     profile: str = "driving",
 ) -> dict:
@@ -30,7 +47,11 @@ async def route(
     if profile not in valid_profiles:
         raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")
 
-    coords_str = _to_lonlat_string(coordinates)
+    parsed_coordinates = _parse_coordinates(coordinates)
+    if len(parsed_coordinates) < 2:
+        raise ValueError("Route requires at least two coordinates")
+
+    coords_str = _to_lonlat_string(parsed_coordinates)
     url = f"{settings.osrm_url}/route/v1/{profile}/{coords_str}"
     params = {"overview": "full", "geometries": "geojson", "steps": "false"}
 
@@ -52,8 +73,8 @@ async def route(
 
 @async_safe_tool
 async def route_matrix(
-    sources: str,
-    destinations: str,
+    sources: str | list,
+    destinations: str | list,
     *,
     profile: str = "driving",
 ) -> dict:
@@ -69,15 +90,18 @@ async def route_matrix(
     if profile not in valid_profiles:
         raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")
 
-    sources_str = _to_lonlat_string(sources)
-    dests_str = _to_lonlat_string(destinations)
+    src_list = _parse_coordinates(sources)
+    dest_list = _parse_coordinates(destinations)
+    sources_str = _to_lonlat_string(src_list)
+    dests_str = _to_lonlat_string(dest_list)
     url = f"{settings.osrm_url}/table/v1/{profile}/{sources_str};{dests_str}"
-    params = {"sources": "all", "annotations": "duration,distance"}
-
-    # Calculate source indices
-    src_list = json.loads(sources) if isinstance(sources, str) else sources
     num_src = len(src_list)
-    params["sources"] = ";".join(str(i) for i in range(num_src))
+    num_dest = len(dest_list)
+    params = {
+        "sources": ";".join(str(i) for i in range(num_src)),
+        "destinations": ";".join(str(i) for i in range(num_src, num_src + num_dest)),
+        "annotations": "duration,distance",
+    }
 
     async with get_client() as client:
         resp = await client.get(url, params=params)
@@ -104,6 +128,7 @@ async def nearest_road(
 
     Returns {lat, lon, name} of the nearest road.
     """
+    validate_coords(lon, lat)
     valid_profiles = {"driving", "walking", "cycling"}
     if profile not in valid_profiles:
         raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")

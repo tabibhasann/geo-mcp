@@ -19,17 +19,21 @@ def osrm_mock(respx_mock: MockRouter):
 class TestRoute:
     @pytest.mark.asyncio
     async def test_route_success(self, osrm_mock):
-        osrm_mock.get(url__regex=r".*/route/v1/driving/.*").respond(json={
-            "code": "Ok",
-            "routes": [{
-                "distance": 5000.0,
-                "duration": 600.0,
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": [[90.4, 23.8], [90.5, 23.9]],
-                },
-            }],
-        })
+        osrm_mock.get(url__regex=r".*/route/v1/driving/.*").respond(
+            json={
+                "code": "Ok",
+                "routes": [
+                    {
+                        "distance": 5000.0,
+                        "duration": 600.0,
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[90.4, 23.8], [90.5, 23.9]],
+                        },
+                    }
+                ],
+            }
+        )
 
         coords = json.dumps([[90.4, 23.8], [90.5, 23.9]])
         result = await route(coords)
@@ -43,15 +47,22 @@ class TestRoute:
         result = await route(coords, profile="flying")
         assert "error" in result
 
+    @pytest.mark.asyncio
+    async def test_route_requires_two_coordinates(self):
+        result = await route(json.dumps([[90.4, 23.8]]))
+        assert "error" in result
+
 
 class TestRouteMatrix:
     @pytest.mark.asyncio
     async def test_matrix_success(self, osrm_mock):
-        osrm_mock.get(url__regex=r".*/table/v1/.*").respond(json={
-            "code": "Ok",
-            "durations": [[0, 100], [100, 0]],
-            "distances": [[0, 5000], [5000, 0]],
-        })
+        mocked_route = osrm_mock.get(url__regex=r".*/table/v1/.*").respond(
+            json={
+                "code": "Ok",
+                "durations": [[100]],
+                "distances": [[5000]],
+            }
+        )
 
         sources = json.dumps([[90.4, 23.8]])
         dests = json.dumps([[90.5, 23.9]])
@@ -59,19 +70,24 @@ class TestRouteMatrix:
         assert isinstance(result, dict)
         if "error" not in result:
             assert "durations" in result
+            assert "destinations=1" in str(mocked_route.calls.last.request.url)
 
 
 class TestNearestRoad:
     @pytest.mark.asyncio
     async def test_nearest_success(self, osrm_mock):
-        osrm_mock.get(url__regex=r".*/nearest/v1/.*").respond(json={
-            "code": "Ok",
-            "waypoints": [{
-                "location": [90.4125, 23.8103],
-                "name": "Main Street",
-                "distance": 5.0,
-            }],
-        })
+        osrm_mock.get(url__regex=r".*/nearest/v1/.*").respond(
+            json={
+                "code": "Ok",
+                "waypoints": [
+                    {
+                        "location": [90.4125, 23.8103],
+                        "name": "Main Street",
+                        "distance": 5.0,
+                    }
+                ],
+            }
+        )
 
         result = await nearest_road(23.8103, 90.4125)
         assert isinstance(result, dict)

@@ -17,6 +17,7 @@ class TestOverpassBuilder:
         assert "[out:json]" in ql
         assert "node" in ql.lower()
         assert "way" in ql.lower()
+        assert "out center body" in ql
 
     def test_bbox_with_specific_types(self):
         ql = build_overpass_query(
@@ -59,17 +60,35 @@ class TestOverpassBuilder:
         assert "Dhaka, Bangladesh" in ql
 
     def test_geojson_polygon_query(self):
-        geojson = json.dumps({
-            "type": "Polygon",
-            "coordinates": [[
-                [90.0, 23.0],
-                [91.0, 23.0],
-                [91.0, 24.0],
-                [90.0, 24.0],
-                [90.0, 23.0],
-            ]],
-        })
+        geojson = json.dumps(
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [90.0, 23.0],
+                        [91.0, 23.0],
+                        [91.0, 24.0],
+                        [90.0, 24.0],
+                        [90.0, 23.0],
+                    ]
+                ],
+            }
+        )
         ql = build_overpass_query(geojson, {"amenity": "hospital"})
         if isinstance(ql, dict) and "error" in ql:
             pytest.fail(f"Build error: {ql}")
         assert "poly:" in ql
+        assert 'node["amenity"="hospital"](poly:' in ql
+        assert 'way["amenity"="hospital"](poly:' in ql
+        assert 'relation["amenity"="hospital"](poly:' in ql
+        assert "node way relation" not in ql
+
+    def test_invalid_element_type(self):
+        result = build_overpass_query([0, 0, 1, 1], {"amenity": "hospital"}, element_types=["node", "foo"])
+        assert "error" in result
+
+    def test_escapes_tag_values(self):
+        ql = build_overpass_query([0, 0, 1, 1], {"name": 'A "quoted" place'})
+        if isinstance(ql, dict) and "error" in ql:
+            pytest.fail(f"Build error: {ql}")
+        assert '["name"="A \\"quoted\\" place"]' in ql

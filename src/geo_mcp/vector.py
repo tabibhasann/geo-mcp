@@ -11,8 +11,7 @@ def _check_files_deps() -> None:
         import pyogrio  # noqa: F401
     except ImportError as e:
         raise ImportError(
-            "Vector file support requires extra: [files]. "
-            "Install with: pip install mcp-geo[files]"
+            "Vector file support requires extra: [files]. Install with: pip install mcp-geo[files]"
         ) from e
 
 
@@ -24,19 +23,24 @@ def vector_info(path: str) -> dict:
     """
     _check_files_deps()
     import geopandas as gpd
+    import pyogrio
+
+    info = pyogrio.read_info(path)
+    layers = pyogrio.list_layers(path)
+    layer_names = [row[0] for row in layers] if len(layers) > 1 else None
 
     gdf = gpd.read_file(path)
     b = gdf.total_bounds
 
     return {
-        "driver": None,  # pyogrio can't easily get driver post-read
+        "driver": info.get("driver"),
         "crs": str(gdf.crs) if gdf.crs else None,
         "feature_count": len(gdf),
         "geometry_types": list(gdf.geom_type.unique()) if gdf.geom_type is not None else [],
         "fields": list(gdf.columns.drop("geometry", errors="ignore")),
         "field_types": {c: str(gdf[c].dtype) for c in gdf.columns if c != "geometry"},
         "bbox": [b[0], b[1], b[2], b[3]],
-        "layers": None,
+        "layers": layer_names,
     }
 
 
@@ -65,6 +69,7 @@ def vector_read(
 
     if bbox:
         import json as _json
+
         b = _json.loads(bbox) if isinstance(bbox, str) else bbox
         bbox_geom = box(b[0], b[1], b[2], b[3])
         gdf = gdf[gdf.geometry.intersects(bbox_geom)]
@@ -93,11 +98,13 @@ def vector_read(
                 props[k] = v.item()
 
         _features = result["features"]  # type: ignore[assignment]
-        _features.append({  # type: ignore[attr-defined]
-            "type": "Feature",
-            "id": len(_features),  # type: ignore[arg-type]
-            "geometry": row.geometry.__geo_interface__,
-            "properties": props,
-        })
+        _features.append(
+            {  # type: ignore[attr-defined]
+                "type": "Feature",
+                "id": len(_features),  # type: ignore[arg-type]
+                "geometry": row.geometry.__geo_interface__,
+                "properties": props,
+            }
+        )
 
     return result

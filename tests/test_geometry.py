@@ -100,6 +100,7 @@ class TestDistance:
 
     def test_distance_different(self, point_geojson):
         import json as _json
+
         far = _json.dumps({"type": "Point", "coordinates": [90.4150, 23.8120]})
         d = distance(point_geojson, far)
         assert d > 0
@@ -139,10 +140,13 @@ class TestSpatialPredicate:
 
     def test_within(self, polygon_geojson):
         import json as _json
-        inner = _json.dumps({
-            "type": "Point",
-            "coordinates": [90.5, 0.5],
-        })
+
+        inner = _json.dumps(
+            {
+                "type": "Point",
+                "coordinates": [90.5, 0.5],
+            }
+        )
         result = spatial_predicate(inner, polygon_geojson, "within")
         if isinstance(result, dict) and "error" in result:
             pytest.fail(f"Predicate error: {result}")
