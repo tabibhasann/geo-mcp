@@ -10,7 +10,13 @@ from geo_mcp.server import mcp
 async def call_tool(name: str, arguments: dict) -> dict | list | str | float | bool:
     result = await mcp.call_tool(name, arguments)
     assert result, f"{name} returned no content"
-    text = result[0].text
+
+    content = getattr(result, "content", result)
+    while isinstance(content, list):
+        assert content, f"{name} returned empty content"
+        content = content[0]
+
+    text = getattr(content, "text", content)
     try:
         return json.loads(text)
     except json.JSONDecodeError:
