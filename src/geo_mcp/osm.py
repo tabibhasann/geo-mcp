@@ -7,8 +7,6 @@ to retrieve OSM features as GeoJSON.
 import contextlib
 import json
 
-import httpx
-
 from .config import settings
 from .errors import async_safe_tool, safe_tool
 
@@ -271,16 +269,21 @@ async def overpass_query(ql_string: str, *, limit: int = 200) -> dict:
 
     Power-user escape hatch — use build_overpass_query for safe query construction.
     """
-    async with httpx.AsyncClient(
-        headers={"User-Agent": settings.user_agent},
-        timeout=httpx.Timeout(settings.overpass_timeout),
-    ) as client:
+    # The shared client returns a fresh httpx.AsyncClient each call.
+    # We use it so the configured User-Agent + retry transport are consistent
+    # with the other HTTP-based tools.
+    from .http import get_client
+
+    client = get_client()
+    try:
         resp = await client.post(
             settings.overpass_url,
             data={"data": ql_string},
         )
         resp.raise_for_status()
         data = resp.json()
+    finally:
+        await client.aclose()
 
     elements = data.get("elements", [])
     result_limit = min(limit, settings.osm_result_limit)

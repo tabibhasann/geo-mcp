@@ -7,6 +7,15 @@ sampling, elevation, isochrones, static maps, and workspace storage.
 [![PyPI version](https://img.shields.io/pypi/v/mcp-geo.svg)](https://pypi.org/project/mcp-geo/)
 [![CI](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+
+```
+                          +-------------------+
+   Natural-language       |     mcp-geo       |    Deterministic
+   agent request   -----> |  44 MCP tools     | --->  geospatial results
+   (Claude, Cursor, ...)  |  12 categories    |      + rendered maps
+                          +-------------------+
+```
 
 ## Why it exists
 
@@ -84,6 +93,18 @@ mcp-geo --sse --host 127.0.0.1 --port 8000
 
 `workspace_store`, `workspace_get`, `workspace_list`, `workspace_clear`,
 `workspace_rename`, `static_map`, `save_map`, `suggest_tools`, `list_all_tools`
+
+## Examples
+
+End-to-end workflows and example agent prompts are in
+[EXAMPLES.md](EXAMPLES.md). Highlights:
+
+- Hospital search around the Buriganga river
+- 15-minute drive-time isochrone + restaurant search
+- Elevation profile for a hike
+- Local GeoPackage inspection
+- Raster sampling and zonal stats
+- Accelerated spatial queries over large collections
 
 ## Configuration
 

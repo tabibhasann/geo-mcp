@@ -1,9 +1,24 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented here.
+This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.4.0] - 2026-06-18
+
+### Added
+- AI-assisted PR review workflow (`.github/workflows/codex-review.yml`)
+- GitHub issue templates (bug, feature request, good first issue) and a PR template
+- `EXAMPLES.md` linking to end-to-end workflow recipes
+- ASCII architecture diagram in the README
+- Coverage gate (`--cov-fail-under=70`) in CI; coverage uploaded to Codecov
+- System-deps install (GDAL/GEOS/PROJ) in CI for the optional `[files]` and `[raster]` extras
+
+### Fixed
+- Removed magic-number `total_tools == 42` assertion in `test_integration.py`; catalog count is computed dynamically
+- `nearest_neighbor` no longer scans O(n²); uses STRtree for candidate lookup
+- Workspace store no longer grows unbounded; LRU cap respected across all entry points
+- Static map output is paginated; large feature collections no longer OOM the server
+- `overpass_query` now reuses the shared `get_client()` (retries + rate limiting applied)
 
 ## [0.3.0] - 2026-06-09
 

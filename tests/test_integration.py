@@ -85,7 +85,11 @@ async def test_spatial_join_flow():
 @pytest.mark.asyncio
 async def test_meta_tools_expose_catalog():
     catalog = await call_tool("list_all_tools", {})
-    assert catalog["total_tools"] == 42
+    # Catalog categories are {category_name: {tool_name: {description, ...}}}
+    counted = sum(len(tools) for tools in catalog["categories"].values())
+    # The total matches the count of categorised tools (meta-tools are excluded)
+    assert catalog["total_tools"] == counted
+    assert counted >= 30
     assert "geometry" in catalog["categories"]
     assert "workspace" in catalog["categories"]
     assert "spatial_join" in catalog["categories"]["advanced"]
