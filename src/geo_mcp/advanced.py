@@ -195,9 +195,7 @@ async def batch_geocode(addresses: list[str], limit: int = 1) -> dict:
 def nearest_neighbor(query_geojson: str, candidates_geojson: str, k: int = 1) -> str:
     """Find the nearest features to a query geometry.
 
-    Uses shapely's STRtree for O(n log n) candidate lookup instead of a naive
-    O(n²) full scan. For each query, the tree is built lazily and cached per
-    process for the lifetime of the server.
+    Computes exact geometry distances and returns the closest candidates.
     """
     if k <= 0:
         raise ValueError("k must be positive")

@@ -10,7 +10,7 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html/)
 - GitHub issue templates (bug, feature request, good first issue) and a PR template
 - `EXAMPLES.md` linking to end-to-end workflow recipes
 - ASCII architecture diagram in the README
-- Coverage gate (`--cov-fail-under=70`) in CI; coverage uploaded to Codecov
+- Coverage gate (`--cov-fail-under=65`) in CI; coverage uploaded to Codecov
 - System-deps install (GDAL/GEOS/PROJ) in CI for the optional `[files]` and `[raster]` extras
 
 ### Fixed

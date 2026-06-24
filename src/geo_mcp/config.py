@@ -2,6 +2,8 @@
 
 from pydantic_settings import BaseSettings
 
+from . import __version__
+
 
 class Settings(BaseSettings):
     """All configurable settings for mcp-geo."""
@@ -11,7 +13,7 @@ class Settings(BaseSettings):
     nominatim_url: str = "https://nominatim.openstreetmap.org"
     osrm_url: str = "https://router.project-osrm.org"
     overpass_url: str = "https://overpass-api.de/api/interpreter"
-    user_agent: str = "geo-mcp/0.3.0 (OSS MCP server; github.com/tabibhasann/geo-mcp)"
+    user_agent: str = f"geo-mcp/{__version__} (OSS MCP server; github.com/tabibhasann/geo-mcp)"
 
     nominatim_rate_limit: float = 1.0  # requests per second
     overpass_timeout: float = 30.0
