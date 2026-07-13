@@ -6,8 +6,12 @@ sampling, elevation, isochrones, static maps, and workspace storage.
 
 [![PyPI version](https://img.shields.io/pypi/v/mcp-geo.svg)](https://pypi.org/project/mcp-geo/)
 [![CI](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-160%20passed-brightgreen)](https://github.com/tabibhasann/geo-mcp/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+
+
+**Demo:** Interactive demo: https://tabibhasann.github.io/geo-mcp/
 
 ```
                           +-------------------+
@@ -22,6 +26,17 @@ sampling, elevation, isochrones, static maps, and workspace storage.
 Geospatial work usually requires several specialized libraries and services.
 `mcp-geo` packages common GIS operations behind stable MCP tools so an agent can
 compose real spatial workflows instead of generating one-off scripts.
+
+### How it compares
+
+| Tool | Tools count | Geocoding | Routing | OSM | Elevation | Isochrones | Raster | Static maps | File I/O |
+|---|---|---|---|---|---|---|---|---|---|
+| **mcp-geo** | 44 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| gis-mcp | ~15 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| CARTO MCP | ~10 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+
+mcp-geo is the most comprehensive open-source MCP server for GIS — from geocoding
+to raster sampling to static map rendering — in a single package.
 
 Example workflow:
 
@@ -63,6 +78,12 @@ mcp-geo --http --host 127.0.0.1 --port 8000
 mcp-geo --sse --host 127.0.0.1 --port 8000
 ```
 
+Check provider connectivity and configuration:
+
+```bash
+mcp-geo doctor
+```
+
 ## Tools
 
 **Geometry**
@@ -94,6 +115,29 @@ mcp-geo --sse --host 127.0.0.1 --port 8000
 `workspace_store`, `workspace_get`, `workspace_list`, `workspace_clear`,
 `workspace_rename`, `static_map`, `save_map`, `suggest_tools`, `list_all_tools`
 
+## Example: MCP tool call
+
+```json
+// Agent calls: geocode("Brandenburg Gate, Berlin")
+// Server returns:
+[
+  {
+    "lat": 52.5163,
+    "lon": 13.3777,
+    "display_name": "Brandenburg Gate, Berlin, Germany",
+    "type": "tourism",
+    "importance": 0.8
+  }
+]
+
+// Agent chains: buffer(point, distance_m=1000)
+// Server returns:
+{
+  "type": "Polygon",
+  "coordinates": [[[13.3689, 52.5074], ...]]
+}
+```
+
 ## Examples
 
 End-to-end workflows and example agent prompts are in
@@ -105,6 +149,16 @@ End-to-end workflows and example agent prompts are in
 - Local GeoPackage inspection
 - Raster sampling and zonal stats
 - Accelerated spatial queries over large collections
+
+## Service usage policies
+
+The default providers are free public services with usage policies:
+
+- **Nominatim**: Max 1 request/second, requires a valid User-Agent. See [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/).
+- **OSRM**: Free demo server, not for production. Self-host for heavy use.
+- **Overpass**: Fair use, avoid large queries during peak hours.
+
+For production, self-host these services or use commercial providers (Mapbox, Google, OpenRouteService).
 
 ## Configuration
 
@@ -147,6 +201,97 @@ docker build -t mcp-geo .
 docker run --rm -p 8000:8000 mcp-geo mcp-geo --http --host 0.0.0.0 --port 8000
 ```
 
+## Roadmap
+
+**What works now:**
+- 44 MCP tools across 12 categories (geometry, geocoding, OSM, routing, elevation, isochrones, files, raster, spatial index, workspace, visualization, meta-tools)
+- stdio, HTTP, and SSE transports
+- Rate limiting and retry logic for public APIs
+- `mcp-geo doctor` connectivity checker
+- `--dry-run` mode (returns mock data without hitting APIs)
+- `--quiet` flag for CI (suppresses progress output)
+- Quota tracking with 80% warning and 100% error thresholds
+- `mcp-geo tools` command for tool discovery
+- `mcp-geo providers` command for provider listing
+
+**Planned:**
+- Provider plugin system (Mapbox, Google Maps geocoding)
+- WebSockets transport
+- Batch file processing tools
+- More raster operations (reproject, clip, mosaic)
+
+## Quick Start
+
+```bash
+# Install
+pip install mcp-geo
+
+# Run as MCP server (add to your agent's MCP config)
+mcp-geo
+
+# List all available tools
+mcp-geo tools
+
+# List configured providers
+mcp-geo providers
+```
+
+### Agent Configuration (Claude Desktop)
+
+```json
+{
+  "mcpServers": {
+    "geo": {
+      "command": "mcp-geo",
+      "env": {
+        "NOMINATIM_EMAIL": "you@example.com",
+        "OPENTRIPMAP_KEY": "optional"
+      }
+    }
+  }
+}
+```
+
+## API
+
+### MCP Tool Categories
+
+| Category | Tools | Description |
+|----------|-------|-------------|
+| Geocoding | 4 | Forward/reverse geocoding via Nominatim |
+| Routing | 3 | Route planning via OSRM |
+| OSM | 5 | OpenStreetMap queries (POI, isochrones, static maps) |
+| Geometry | 6 | Buffer, intersect, distance, area, centroid, transform |
+| Files | 5 | Inspect GeoJSON, Shapefile, GeoPackage, KML, CSV |
+| Raster | 4 | Sample, stats, contour, reproject |
+| Elevation | 3 | Point, profile, batch elevation |
+| Workspace | 4 | Save/retrieve spatial data between tool calls |
+
+### Python API
+
+```python
+from geo_mcp.server import mcp
+
+# Run the MCP server
+mcp.run()
+```
+
+
+## CLI Reference
+
+\`\`\`bash
+geo-mcp --help     # Show all available commands and options
+geo-mcp --version  # Print the installed version
+\`\`\`
+
+## Contributing
+
+PRs welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## License
 
 MIT
+
+---
+
+⭐ Star [tabibhasann/geo-mcp](https://github.com/tabibhasann/geo-mcp) on GitHub if this helped you.
