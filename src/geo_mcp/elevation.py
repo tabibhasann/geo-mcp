@@ -1,9 +1,9 @@
-"""Elevation lookup tools using Open-Elevation API."""
+"""Elevation tools — delegate to the configured provider."""
 
 import json
 
 from .errors import async_safe_tool
-from .http import get_client
+from .providers import get_elevation_provider
 from .validation import validate_coords
 
 
@@ -19,25 +19,8 @@ async def elevation(
     Returns {lat, lon, elevation_m}.
     """
     validate_coords(lon, lat)
-
-    async with get_client() as client:
-        resp = await client.get(
-            "https://api.open-elevation.com/api/v1/lookup",
-            params={"latitude": lat, "longitude": lon},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-    results = data.get("results") or [data]
-    if not results:
-        raise ValueError("Elevation provider returned no results")
-    result = results[0]
-
-    return {
-        "lat": result.get("latitude", lat),
-        "lon": result.get("longitude", lon),
-        "elevation_m": result.get("elevation"),
-    }
+    provider = get_elevation_provider()
+    return await provider.elevation(lat, lon)
 
 
 @async_safe_tool
@@ -57,23 +40,5 @@ async def elevation_profile(
     for c in coords:
         validate_coords(c[0], c[1])
 
-    points = [{"latitude": c[1], "longitude": c[0]} for c in coords]
-
-    async with get_client() as client:
-        resp = await client.post(
-            "https://api.open-elevation.com/api/v1/lookup",
-            json={"locations": points},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-    results = []
-    for r in data.get("results", []):
-        results.append(
-            {
-                "lat": r.get("latitude"),
-                "lon": r.get("longitude"),
-                "elevation_m": r.get("elevation"),
-            }
-        )
-    return results
+    provider = get_elevation_provider()
+    return await provider.elevation_profile(coords)

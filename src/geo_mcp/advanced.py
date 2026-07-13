@@ -164,6 +164,8 @@ async def cached_geocode(address: str, limit: int = 1) -> dict:
         return {"address": address, "cached": True, "matches": payload}
 
     matches = await geocode(address, limit=limit)
+    if isinstance(matches, dict) and "error" in matches:
+        return {"address": address, "cached": False, "matches": matches}
     if len(_geocode_cache) >= 1000:
         _geocode_cache.popitem(last=False)
 

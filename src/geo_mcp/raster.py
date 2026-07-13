@@ -54,7 +54,7 @@ def zonal_stats(
 
     zones = _json.loads(zones_geojson) if isinstance(zones_geojson, str) else zones_geojson
 
-    results = rzs(zones, raster_path, stats=stats, geojson_out=False)
+    results = rzs(zones, raster_path, stats=stats, geojson_out=False, nodata=float('nan'))
     return list(results)
 
 

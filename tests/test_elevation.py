@@ -24,7 +24,7 @@ class TestElevation:
         }
         mock_response.raise_for_status = lambda: None
 
-        with patch("geo_mcp.elevation.get_client") as mock_client:
+        with patch("geo_mcp.providers.get_client") as mock_client:
             mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
 
             result = await elevation(40.7128, -74.0060)
@@ -42,7 +42,7 @@ class TestElevation:
     @pytest.mark.asyncio
     async def test_elevation_http_error(self):
         """Test elevation with HTTP error."""
-        with patch("geo_mcp.elevation.get_client") as mock_client:
+        with patch("geo_mcp.providers.get_client") as mock_client:
             mock_client.return_value.__aenter__.return_value.get = AsyncMock(
                 side_effect=httpx.HTTPError("Network error")
             )
@@ -71,7 +71,7 @@ class TestElevationProfile:
         }
         mock_response.raise_for_status = lambda: None
 
-        with patch("geo_mcp.elevation.get_client") as mock_client:
+        with patch("geo_mcp.providers.get_client") as mock_client:
             mock_client.return_value.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
 
             result = await elevation_profile(coords)

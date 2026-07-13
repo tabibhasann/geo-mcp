@@ -104,3 +104,101 @@ async def test_tool_errors_are_mcp_safe():
     result = await call_tool("buffer", {"geojson": "not valid json", "distance_m": 100})
     assert "error" in result
     assert "hint" in result
+
+
+@pytest.mark.asyncio
+async def test_dry_run_geocode():
+    """Dry-run mode returns mock data without hitting APIs."""
+    from geo_mcp.config import settings
+
+    original = settings.dry_run
+    settings.dry_run = True
+    try:
+        result = await call_tool("geocode", {"query": "Dhaka", "limit": 1})
+        if isinstance(result, dict) and "lat" in result:
+            result = [result]
+        assert isinstance(result, list)
+        assert len(result) >= 1
+        assert "lat" in result[0]
+        assert "lon" in result[0]
+    finally:
+        settings.dry_run = original
+
+
+@pytest.mark.asyncio
+async def test_dry_run_route():
+    """Dry-run mode returns mock route data."""
+    from geo_mcp.config import settings
+
+    original = settings.dry_run
+    settings.dry_run = True
+    try:
+        result = await call_tool(
+            "route",
+            {"coordinates": "[[90.41, 23.81], [90.42, 23.82]]", "profile": "driving"},
+        )
+        assert "distance_m" in result
+        assert "duration_s" in result
+        assert "geometry" in result
+    finally:
+        settings.dry_run = original
+
+
+@pytest.mark.asyncio
+async def test_dry_run_elevation():
+    """Dry-run mode returns mock elevation data."""
+    from geo_mcp.config import settings
+
+    original = settings.dry_run
+    settings.dry_run = True
+    try:
+        result = await call_tool("elevation", {"lat": 23.81, "lon": 90.41})
+        assert "elevation_m" in result
+    finally:
+        settings.dry_run = original
+
+
+def test_provider_registry():
+    """Provider registry has all expected default providers."""
+    from geo_mcp.providers import PROVIDER_REGISTRY
+
+    assert "geocoding" in PROVIDER_REGISTRY
+    assert "nominatim" in PROVIDER_REGISTRY["geocoding"]
+    assert "routing" in PROVIDER_REGISTRY
+    assert "osrm" in PROVIDER_REGISTRY["routing"]
+    assert "elevation" in PROVIDER_REGISTRY
+    assert "open_elevation" in PROVIDER_REGISTRY["elevation"]
+
+
+def test_quota_tracker():
+    """Quota tracker records calls and warns at thresholds."""
+    from geo_mcp.providers import QuotaTracker
+
+    tracker = QuotaTracker("test", daily_limit=10)
+    for _ in range(8):
+        tracker.record()
+    assert tracker.call_count == 8
+    assert tracker._warned_80 is True
+    assert tracker._warned_100 is False
+
+
+def test_quota_tracker_limit():
+    """Quota tracker raises at 100% usage."""
+    from geo_mcp.providers import QuotaTracker
+
+    tracker = QuotaTracker("test", daily_limit=3)
+    tracker.record()
+    tracker.record()
+    with pytest.raises(RuntimeError, match="daily limit reached"):
+        tracker.record()
+
+
+def test_list_providers():
+    """list_providers returns all registered providers."""
+    from geo_mcp.providers import list_providers
+
+    registry = list_providers()
+    assert "geocoding" in registry
+    assert "nominatim" in registry["geocoding"]
+    assert "routing" in registry
+    assert "osrm" in registry["routing"]

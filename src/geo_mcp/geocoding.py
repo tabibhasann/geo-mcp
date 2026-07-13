@@ -1,8 +1,7 @@
-"""Geocoding tools using Nominatim (OpenStreetMap)."""
+"""Geocoding tools — delegate to the configured provider."""
 
-from .config import settings
 from .errors import async_safe_tool
-from .http import get_client, nominatim_limiter
+from .providers import get_geocoding_provider
 from .validation import validate_coords
 
 
@@ -18,39 +17,8 @@ async def geocode(
     Returns a list of matches with name, lat, lon, bounding box, OSM type,
     and importance score, sorted most relevant first.
     """
-    params: dict = {
-        "q": query,
-        "format": "jsonv2",
-        "limit": min(limit, settings.geocode_result_limit),
-        "addressdetails": 1,
-    }
-    if countrycodes:
-        params["countrycodes"] = countrycodes
-
-    limiter = nominatim_limiter()
-    async with get_client() as client:
-        await limiter.acquire()
-        resp = await client.get(f"{settings.nominatim_url}/search", params=params)
-        resp.raise_for_status()
-        results = resp.json()
-
-    return [
-        {
-            "name": r.get("display_name", ""),
-            "lat": float(r["lat"]),
-            "lon": float(r["lon"]),
-            "bbox": [
-                float(r["boundingbox"][2]),
-                float(r["boundingbox"][0]),
-                float(r["boundingbox"][3]),
-                float(r["boundingbox"][1]),
-            ],
-            "osm_type": r.get("osm_type"),
-            "osm_id": r.get("osm_id"),
-            "importance": float(r.get("importance", 0)),
-        }
-        for r in results
-    ]
+    provider = get_geocoding_provider()
+    return await provider.geocode(query, limit=limit, countrycodes=countrycodes)
 
 
 @async_safe_tool
@@ -65,26 +33,5 @@ async def reverse_geocode(
     Returns a structured address and display name.
     """
     validate_coords(lon, lat)
-    params: dict[str, str | int | float] = {
-        "lat": lat,
-        "lon": lon,
-        "format": "jsonv2",
-        "zoom": zoom,
-        "addressdetails": 1,
-    }
-
-    limiter = nominatim_limiter()
-    async with get_client() as client:
-        await limiter.acquire()
-        resp = await client.get(f"{settings.nominatim_url}/reverse", params=params)
-        resp.raise_for_status()
-        data = resp.json()
-
-    return {
-        "display_name": data.get("display_name", ""),
-        "address": data.get("address", {}),
-        "lat": float(data.get("lat", lat)),
-        "lon": float(data.get("lon", lon)),
-        "osm_type": data.get("osm_type"),
-        "osm_id": data.get("osm_id"),
-    }
+    provider = get_geocoding_provider()
+    return await provider.reverse_geocode(lat, lon, zoom=zoom)

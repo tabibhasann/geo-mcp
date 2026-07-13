@@ -100,13 +100,110 @@ def _parser() -> argparse.ArgumentParser:
     transport.add_argument("--http", "--streamable-http", action="store_true", help="Run streamable HTTP transport.")
     parser.add_argument("--host", default="127.0.0.1", help="Host for HTTP/SSE transports.")
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP/SSE transports.")
+    parser.add_argument("--dry-run", action="store_true", help="Return mock data without hitting APIs.")
+    parser.add_argument("--quiet", action="store_true", help="Suppress progress/warning output (CI mode).")
     parser.add_argument("--version", action="version", version=f"mcp-geo {__version__}")
+    sub = parser.add_subparsers(dest="command")
+    sub.add_parser("doctor", help="Check API connectivity and configuration.")
+    sub.add_parser("tools", help="List all available tools with descriptions.")
+    sub.add_parser("providers", help="List configured providers.")
     return parser
+
+
+async def _doctor() -> None:
+    """Run connectivity checks against configured providers."""
+    import httpx
+
+    from .config import settings
+
+    checks = [
+        ("Nominatim (geocoding)", settings.nominatim_url, "/search?q=test&format=json&limit=1"),
+        ("OSRM (routing)", settings.osrm_url, "/route/v1/driving/0,0;0.001,0.001?overview=false"),
+        ("Overpass (OSM queries)", settings.overpass_url, ""),
+    ]
+    if settings.ors_api_key:
+        checks.append(("OpenRouteService (isochrones)", settings.ors_url, "/v2/health"))
+
+    print(f"mcp-geo {__version__} — doctor\n")
+    all_ok = True
+    async with httpx.AsyncClient(
+        headers={"User-Agent": settings.user_agent},
+        timeout=httpx.Timeout(10.0),
+    ) as client:
+        for name, base, path in checks:
+            url = f"{base}{path}" if path else base
+            try:
+                resp = await client.get(url)
+                status = resp.status_code
+                ok = status < 500
+                symbol = "✓" if ok else "✗"
+                print(f"  {symbol} {name}: HTTP {status}")
+                if not ok:
+                    all_ok = False
+            except Exception as e:
+                print(f"  ✗ {name}: {e}")
+                all_ok = False
+
+    print(f"\n  ORS API key: {'set' if settings.ors_api_key else 'not set (isochrones disabled)'}")
+    print(f"  Rate limit:  {settings.nominatim_rate_limit} req/s (Nominatim)")
+    print(f"  Retries:     {settings.http_retries}")
+    print(f"\n  {'All checks passed.' if all_ok else 'Some providers unreachable — check network/config.'}")
+    raise SystemExit(0 if all_ok else 1)
+
+
+def _tools() -> None:
+    """List all available tools with descriptions."""
+    from .meta_tools import TOOL_CATALOG
+
+    total = sum(len(tools) for tools in TOOL_CATALOG.values())
+    print(f"mcp-geo {__version__} — {total} tools\n")
+    for category, tools in TOOL_CATALOG.items():
+        print(f"  {category} ({len(tools)}):")
+        for name, info in tools.items():
+            print(f"    {name:24s}  {info['description']}")
+        print()
+
+
+def _providers() -> None:
+    """List configured providers."""
+    from .providers import list_providers
+
+    registry = list_providers()
+    print(f"mcp-geo {__version__} — providers\n")
+    for service, providers in registry.items():
+        active = getattr(__import__("geo_mcp.config", fromlist=["settings"]).settings, f"{service}_provider", "default")
+        print(f"  {service}:")
+        for name, info in providers.items():
+            marker = " *" if name == active else ""
+            print(f"    {name}{marker}  ({info['class']})")
+        print()
 
 
 def main() -> None:
     """Run the MCP server."""
     args = _parser().parse_args(sys.argv[1:])
+
+    if args.command == "doctor":
+        import asyncio
+
+        asyncio.run(_doctor())
+        return
+
+    if args.command == "tools":
+        _tools()
+        return
+
+    if args.command == "providers":
+        _providers()
+        return
+
+    from .config import settings
+
+    if args.dry_run:
+        settings.dry_run = True
+    if args.quiet:
+        settings.quiet = True
+
     mcp.settings.host = args.host
     mcp.settings.port = args.port
 

@@ -97,11 +97,11 @@ def vector_read(
             if hasattr(v, "item"):
                 props[k] = v.item()
 
-        _features = result["features"]  # type: ignore[assignment]
-        _features.append(
-            {  # type: ignore[attr-defined]
+        features: list = result["features"]
+        features.append(
+            {
                 "type": "Feature",
-                "id": len(_features),  # type: ignore[arg-type]
+                "id": len(features),
                 "geometry": row.geometry.__geo_interface__,
                 "properties": props,
             }

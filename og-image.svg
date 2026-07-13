@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#141414"/>
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg-grad)"/>
+  <rect width="1200" height="630" fill="url(#accent-grad)"/>
+
+  <rect x="60" y="60" width="1080" height="510" rx="16" fill="#111111" stroke="#10b981" stroke-opacity="0.2" stroke-width="1"/>
+
+  <rect x="60" y="60" width="4" height="510" rx="2" fill="#10b981"/>
+
+  <g transform="translate(140, 200)">
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#10b981" stroke-width="3" opacity="0.9"/><ellipse cx="0" cy="0" rx="20" ry="40" fill="none" stroke="#10b981" stroke-width="3" opacity="0.9"/><line x1="-40" y1="0" x2="40" y2="0" stroke="#10b981" stroke-width="3" opacity="0.9"/>
+  </g>
+
+  <text x="260" y="220" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="52" font-weight="800" fill="#fafafa">mcp-geo</text>
+
+  <text x="260" y="270" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="28" font-weight="400" fill="#a0a0a0">Geospatial MCP server for AI agents</text>
+
+  <text x="140" y="500" font-family="JetBrains Mono, monospace" font-size="18" fill="#a0a0a0" opacity="0.6">github.com/tabibhasann/geo-mcp</text>
+
+  <circle cx="1080" cy="100" r="40" fill="#10b981" opacity="0.08"/>
+  <circle cx="1080" cy="100" r="25" fill="#10b981" opacity="0.12"/>
+  <circle cx="1080" cy="100" r="12" fill="#10b981" opacity="0.2"/>
+</svg>

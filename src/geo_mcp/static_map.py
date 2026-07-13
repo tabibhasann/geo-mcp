@@ -94,51 +94,53 @@ def static_map(
 
     background, fill_color, edge_color, text_color = _style_colors(style)
     fig, ax = plt.subplots(figsize=(width / 100, height / 100), dpi=100)
-    fig.patch.set_facecolor(background)
-    ax.set_facecolor(background)
+    try:
+        fig.patch.set_facecolor(background)
+        ax.set_facecolor(background)
 
-    for geom in geometries:
-        if geom.geom_type == "Point":
-            ax.plot(geom.x, geom.y, "o", color=fill_color, markersize=8, markeredgecolor=edge_color)
-        elif geom.geom_type == "MultiPoint":
-            for point in geom.geoms:
-                ax.plot(point.x, point.y, "o", color=fill_color, markersize=8, markeredgecolor=edge_color)
-        elif geom.geom_type == "LineString":
-            x, y = geom.xy
-            ax.plot(x, y, "-", color=fill_color, linewidth=2)
-        elif geom.geom_type == "MultiLineString":
-            for line in geom.geoms:
-                x, y = line.xy
+        for geom in geometries:
+            if geom.geom_type == "Point":
+                ax.plot(geom.x, geom.y, "o", color=fill_color, markersize=8, markeredgecolor=edge_color)
+            elif geom.geom_type == "MultiPoint":
+                for point in geom.geoms:
+                    ax.plot(point.x, point.y, "o", color=fill_color, markersize=8, markeredgecolor=edge_color)
+            elif geom.geom_type == "LineString":
+                x, y = geom.xy
                 ax.plot(x, y, "-", color=fill_color, linewidth=2)
-        elif geom.geom_type == "Polygon":
-            x, y = geom.exterior.xy
-            ax.fill(x, y, color=fill_color, alpha=0.3, edgecolor=edge_color, linewidth=1.5)
-        elif geom.geom_type == "MultiPolygon":
-            for polygon in geom.geoms:
-                x, y = polygon.exterior.xy
+            elif geom.geom_type == "MultiLineString":
+                for line in geom.geoms:
+                    x, y = line.xy
+                    ax.plot(x, y, "-", color=fill_color, linewidth=2)
+            elif geom.geom_type == "Polygon":
+                x, y = geom.exterior.xy
                 ax.fill(x, y, color=fill_color, alpha=0.3, edgecolor=edge_color, linewidth=1.5)
+            elif geom.geom_type == "MultiPolygon":
+                for polygon in geom.geoms:
+                    x, y = polygon.exterior.xy
+                    ax.fill(x, y, color=fill_color, alpha=0.3, edgecolor=edge_color, linewidth=1.5)
 
-    lon_padding = max((max_lon - min_lon) * 0.1, 0.001)
-    lat_padding = max((max_lat - min_lat) * 0.1, 0.001)
-    if center:
-        ax.set_xlim(center_lon - lon_padding * 2, center_lon + lon_padding * 2)
-        ax.set_ylim(center_lat - lat_padding * 2, center_lat + lat_padding * 2)
-    else:
-        ax.set_xlim(min_lon - lon_padding, max_lon + lon_padding)
-        ax.set_ylim(min_lat - lat_padding, max_lat + lat_padding)
+        lon_padding = max((max_lon - min_lon) * 0.1, 0.001)
+        lat_padding = max((max_lat - min_lat) * 0.1, 0.001)
+        if center:
+            ax.set_xlim(center_lon - lon_padding * 2, center_lon + lon_padding * 2)
+            ax.set_ylim(center_lat - lat_padding * 2, center_lat + lat_padding * 2)
+        else:
+            ax.set_xlim(min_lon - lon_padding, max_lon + lon_padding)
+            ax.set_ylim(min_lat - lat_padding, max_lat + lat_padding)
 
-    ax.grid(True, alpha=0.2, color="gray")
-    ax.set_xlabel("Longitude", color=text_color, fontsize=10)
-    ax.set_ylabel("Latitude", color=text_color, fontsize=10)
-    ax.tick_params(colors=text_color, labelsize=8)
-    ax.set_title(f"Static Map (zoom: {zoom}, {len(geometries)} features)", color=text_color, fontsize=12, pad=10)
-    plt.tight_layout()
+        ax.grid(True, alpha=0.2, color="gray")
+        ax.set_xlabel("Longitude", color=text_color, fontsize=10)
+        ax.set_ylabel("Latitude", color=text_color, fontsize=10)
+        ax.tick_params(colors=text_color, labelsize=8)
+        ax.set_title(f"Static Map (zoom: {zoom}, {len(geometries)} features)", color=text_color, fontsize=12, pad=10)
+        plt.tight_layout()
 
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=100, bbox_inches="tight", facecolor=fig.get_facecolor())
-    buf.seek(0)
-    image_base64 = base64.b64encode(buf.read()).decode("utf-8")
-    plt.close(fig)
+        buf = io.BytesIO()
+        plt.savefig(buf, format="png", dpi=100, bbox_inches="tight", facecolor=fig.get_facecolor())
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode("utf-8")
+    finally:
+        plt.close(fig)
 
     return {
         "image_base64": image_base64,

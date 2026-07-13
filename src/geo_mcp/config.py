@@ -27,5 +27,21 @@ class Settings(BaseSettings):
     ors_api_key: str | None = None
     ors_url: str = "https://api.openrouteservice.org"
 
+    # Provider selection (plugin system)
+    geocoding_provider: str = "nominatim"
+    routing_provider: str = "osrm"
+    elevation_provider: str = "open_elevation"
+
+    # Dry-run mode (return mock data without hitting APIs)
+    dry_run: bool = False
+
+    # Quiet mode (suppress progress/warning output in CI)
+    quiet: bool = False
+
+    # Quota tracking (daily limits, 0 = unlimited)
+    nominatim_daily_limit: int = 0
+    osrm_daily_limit: int = 0
+    open_elevation_daily_limit: int = 0
+
 
 settings = Settings()
