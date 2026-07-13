@@ -99,7 +99,7 @@ def spatial_query(geojson_collection: str, query_geojson: str, predicate: str = 
     for candidate in candidates:
         geom = geometries[int(candidate)] if isinstance(candidate, Integral) else candidate
         feature = feature_by_geom_id[id(geom)]
-        if _PREDICATES[predicate](geom, query_geom):
+        if _PREDICATES[predicate](geom, query_geom):  # type: ignore[no-untyped-call]
             results.append(feature)
 
     return _json_feature_collection(results)
