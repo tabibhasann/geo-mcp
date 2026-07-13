@@ -351,7 +351,7 @@ def get_geocoding_provider() -> GeocodingProvider:
             f"Unknown geocoding provider '{name}'. "
             f"Available: {sorted(PROVIDER_REGISTRY['geocoding'])}"
         )
-    return cls()
+    return cls()  # type: ignore[no-any-return]
 
 
 def get_routing_provider() -> RoutingProvider:
@@ -362,7 +362,7 @@ def get_routing_provider() -> RoutingProvider:
             f"Unknown routing provider '{name}'. "
             f"Available: {sorted(PROVIDER_REGISTRY['routing'])}"
         )
-    return cls()
+    return cls()  # type: ignore[no-any-return]
 
 
 def get_elevation_provider() -> ElevationProvider:
@@ -373,7 +373,7 @@ def get_elevation_provider() -> ElevationProvider:
             f"Unknown elevation provider '{name}'. "
             f"Available: {sorted(PROVIDER_REGISTRY['elevation'])}"
         )
-    return cls()
+    return cls()  # type: ignore[no-any-return]
 
 
 def list_providers() -> dict:

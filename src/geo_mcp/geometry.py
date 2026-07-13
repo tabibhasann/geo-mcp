@@ -3,18 +3,19 @@
 import json
 
 from shapely import make_valid
+from shapely.geometry.base import BaseGeometry
 from shapely.validation import explain_validity
 
 from . import units
 from .errors import safe_tool
 
 
-def parse(geojson_str: str):
+def parse(geojson_str: str) -> BaseGeometry:
     """Parse GeoJSON string and return a shapely geometry."""
     return units.geojson_to_shapely(geojson_str)
 
 
-def serialize(geom, indent: int | None = None) -> str:
+def serialize(geom: BaseGeometry, indent: int | None = None) -> str:
     """Serialize a shapely geometry to GeoJSON string."""
     return units.shapely_to_geojson(geom, indent)
 
@@ -108,7 +109,7 @@ def spatial_predicate(geojson_a: str, geojson_b: str, op: str) -> bool:
         raise ValueError(f"Unknown spatial predicate: {op}. Supported: {list(_PREDICATE_OPS)}")
     geom_a = parse(geojson_a)
     geom_b = parse(geojson_b)
-    return _PREDICATE_OPS[op](geom_a, geom_b)
+    return bool(_PREDICATE_OPS[op](geom_a, geom_b))
 
 
 @safe_tool

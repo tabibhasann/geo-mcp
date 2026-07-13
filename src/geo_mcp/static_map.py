@@ -164,7 +164,7 @@ def save_map(
     """Render GeoJSON and save it as a PNG file."""
     result = static_map(geojson, width=width, height=height, style=style)
     if "error" in result:
-        return result
+        return result  # type: ignore[no-any-return]
 
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)

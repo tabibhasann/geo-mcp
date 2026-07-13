@@ -6,7 +6,7 @@ sampling, elevation, isochrones, static maps, and workspace storage.
 
 [![PyPI version](https://img.shields.io/pypi/v/mcp-geo.svg)](https://pypi.org/project/mcp-geo/)
 [![CI](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tabibhasann/geo-mcp/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-160%20passed-brightgreen)](https://github.com/tabibhasann/geo-mcp/actions)
+[![Coverage](https://img.shields.io/badge/coverage-76%25-brightgreen)](https://github.com/tabibhasann/geo-mcp/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
@@ -29,14 +29,16 @@ compose real spatial workflows instead of generating one-off scripts.
 
 ### How it compares
 
-| Tool | Tools count | Geocoding | Routing | OSM | Elevation | Isochrones | Raster | Static maps | File I/O |
-|---|---|---|---|---|---|---|---|---|---|
-| **mcp-geo** | 44 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| gis-mcp | ~15 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| CARTO MCP | ~10 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Tool | Tools count | Geocoding | Routing | OSM | Elevation | Isochrones | Raster | Static maps | File I/O | Self-hostable |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **mcp-geo** | 44 | ✅ Nominatim | ✅ OSRM | ✅ Overpass | ✅ Open-Elevation | ✅ ORS | ✅ rasterio | ✅ matplotlib | ✅ pyogrio | ✅ all providers |
+| [gis-mcp](https://github.com/aliyun2021/gis-mcp) | ~15 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | partial |
+| [CARTO MCP](https://carto.com/blog/carto-mcp-server/) | ~10 | ✅ CARTO | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ SaaS only |
+| [Felt MCP](https://felt.com/blog/mcp) | ~8 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ SaaS only |
 
 mcp-geo is the most comprehensive open-source MCP server for GIS — from geocoding
-to raster sampling to static map rendering — in a single package.
+to raster sampling to static map rendering — in a single package. Unlike CARTO and
+Felt, it requires no API keys for core functionality and can be fully self-hosted.
 
 Example workflow:
 

@@ -27,7 +27,7 @@ def _feature_collection(geojson_collection: str) -> dict[str, Any]:
     data = json.loads(geojson_collection)
     if data.get("type") != "FeatureCollection":
         raise ValueError("Input must be a GeoJSON FeatureCollection")
-    return data
+    return data  # type: ignore[no-any-return]
 
 
 def _feature_geometries(features: list[dict[str, Any]]) -> list[Any]:

@@ -220,7 +220,7 @@ async def osm_features(
     if isinstance(ql, dict) and "error" in ql:
         return ql
 
-    return await overpass_query(ql, limit=limit)
+    return await overpass_query(ql, limit=limit)  # type: ignore[no-any-return]
 
 
 async def _query_large_bbox(bbox: list, tags_dict: dict, limit: int) -> dict:

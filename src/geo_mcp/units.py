@@ -6,6 +6,7 @@ from typing import Any
 from pyproj import Geod, Transformer
 from shapely import from_geojson, to_geojson
 from shapely.geometry import mapping
+from shapely.geometry.base import BaseGeometry
 
 WGS84_GEOD = Geod(ellps="WGS84")
 
@@ -13,30 +14,30 @@ WGS84_GEOD = Geod(ellps="WGS84")
 def parse_geojson(geojson_str: str) -> dict[str, Any]:
     """Parse a GeoJSON string into a Python dict."""
     try:
-        return json.loads(geojson_str) if isinstance(geojson_str, str) else geojson_str
+        return json.loads(geojson_str) if isinstance(geojson_str, str) else geojson_str  # type: ignore[no-any-return]
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid GeoJSON: {e}") from e
 
 
-def geojson_to_shapely(geojson_str: str):
+def geojson_to_shapely(geojson_str: str) -> BaseGeometry:
     """Convert GeoJSON string to a shapely geometry object."""
     data = parse_geojson(geojson_str)
     geom_data = data.get("geometry", data)
     return from_geojson(json.dumps(geom_data))
 
 
-def shapely_to_geojson(geom, indent: int | None = None) -> str:
+def shapely_to_geojson(geom: BaseGeometry, indent: int | None = None) -> str:
     """Convert a shapely geometry to a GeoJSON string."""
     return json.dumps(mapping(geom), indent=indent)
 
 
-def get_centroid_lonlat(geom) -> tuple[float, float]:
+def get_centroid_lonlat(geom: BaseGeometry) -> tuple[float, float]:
     """Get (lon, lat) of geometry centroid in WGS84."""
     centroid = geom.centroid
     return (centroid.x, centroid.y)
 
 
-def pick_utm_epsg(geom) -> str:
+def pick_utm_epsg(geom: BaseGeometry) -> str:
     """Auto-compute the UTM EPSG code for the geometry centroid.
 
     Returns EPSG:326xx for northern hemisphere, 327xx for southern.
@@ -49,7 +50,7 @@ def pick_utm_epsg(geom) -> str:
     return f"EPSG:327{utm_zone:02d}"
 
 
-def geodesic_area(geom, unit: str = "m2") -> float:
+def geodesic_area(geom: BaseGeometry, unit: str = "m2") -> float:
     """Compute geodesic area of a geometry on the WGS84 ellipsoid.
 
     Works by projecting to a local azimuthal equal-area projection,
@@ -70,7 +71,7 @@ def geodesic_area(geom, unit: str = "m2") -> float:
         return convert_area(area_m2, "m2", unit)
 
 
-def geodesic_length(geom, unit: str = "m") -> float:
+def geodesic_length(geom: BaseGeometry, unit: str = "m") -> float:
     """Compute geodesic length/perimeter on the WGS84 ellipsoid."""
     try:
         _, perimeter_m = WGS84_GEOD.geometry_area_perimeter(geom)
@@ -80,7 +81,7 @@ def geodesic_length(geom, unit: str = "m") -> float:
         return convert_length(length_m, "m", unit)
 
 
-def reproject_geom(geom, from_crs: str, to_crs: str):
+def reproject_geom(geom: BaseGeometry, from_crs: str, to_crs: str) -> BaseGeometry:
     """Reproject a shapely geometry between CRS using pyproj's geometry transform."""
     transformer = Transformer.from_crs(from_crs, to_crs, always_xy=True)
     geom_json = json.loads(to_geojson(geom))
@@ -88,7 +89,7 @@ def reproject_geom(geom, from_crs: str, to_crs: str):
     return from_geojson(json.dumps(geom_json))
 
 
-def _transform_coords(geom_data: dict, transformer) -> None:
+def _transform_coords(geom_data: dict[str, Any], transformer: Transformer) -> None:
     """Recursively transform coordinates in a GeoJSON-like dict."""
     if geom_data.get("type") == "Point":
         x, y = geom_data["coordinates"]
@@ -114,7 +115,7 @@ def _transform_coords(geom_data: dict, transformer) -> None:
             _transform_coords(g, transformer)
 
 
-def buffer_in_meters(geom, distance_m: float, quad_segs: int = 8):
+def buffer_in_meters(geom: BaseGeometry, distance_m: float, quad_segs: int = 8) -> BaseGeometry:
     """Buffer a WGS84 geometry by a distance in metres.
 
     Reprojects to the appropriate UTM zone, buffers in metres, then
@@ -126,7 +127,7 @@ def buffer_in_meters(geom, distance_m: float, quad_segs: int = 8):
     return reproject_geom(buffered, utm, "EPSG:4326")
 
 
-def geodesic_distance(geom_a, geom_b, unit: str = "m") -> float:
+def geodesic_distance(geom_a: BaseGeometry, geom_b: BaseGeometry, unit: str = "m") -> float:
     """Compute geodesic distance between two geometry centroids."""
     ax, ay = get_centroid_lonlat(geom_a)
     bx, by = get_centroid_lonlat(geom_b)
