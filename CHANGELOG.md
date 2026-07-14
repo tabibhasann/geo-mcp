@@ -3,6 +3,25 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html/).
 
+## [0.4.0](https://github.com/tabibhasann/geo-mcp/compare/v0.3.0...v0.4.0) (2026-07-14)
+
+
+### Features
+
+* add type hints, py.typed, mypy strict, error path tests, coverage tracking, release workflow, improved comparison table ([ccf0bc2](https://github.com/tabibhasann/geo-mcp/commit/ccf0bc2e23ce5f867aa066b5b79497802a40c00e))
+
+
+### Bug Fixes
+
+* add Callable type annotations to predicate dicts for mypy strict ([d924316](https://github.com/tabibhasann/geo-mcp/commit/d9243168fd8566ddeccef42213bed1177c9531d1))
+* remove unused type: ignore comments (Python 3.11) ([9c6d57f](https://github.com/tabibhasann/geo-mcp/commit/9c6d57fa52865ed18c1411e0f54c7f8d1a2a33ff))
+* resolve mypy strict errors in geometry.py and advanced.py ([7182964](https://github.com/tabibhasann/geo-mcp/commit/7182964006d7e3f4bac5767071b2bbeb5f2172e7))
+
+
+### Documentation
+
+* expand CONTRIBUTING.md with testing, CI, and PR conventions ([558b151](https://github.com/tabibhasann/geo-mcp/commit/558b1512592a6ae6ea44cd76e1319136aa938b4b))
+
 ## [0.4.0] - 2026-06-18
 
 ### Added
