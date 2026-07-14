@@ -6,6 +6,8 @@ from .errors import async_safe_tool
 from .providers import get_routing_provider
 from .validation import validate_coords
 
+_VALID_PROFILES = frozenset({"driving", "walking", "cycling"})
+
 
 def _parse_coordinates(coords: str | list) -> list[list[float]]:
     """Parse and validate a list of [lon, lat] coordinates."""
@@ -37,9 +39,8 @@ async def route(
 
     Returns distance (metres), duration (seconds), and the route geometry as GeoJSON.
     """
-    valid_profiles = {"driving", "walking", "cycling"}
-    if profile not in valid_profiles:
-        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")
+    if profile not in _VALID_PROFILES:
+        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(_VALID_PROFILES)}")
 
     parsed_coordinates = _parse_coordinates(coordinates)
     if len(parsed_coordinates) < 2:
@@ -64,9 +65,8 @@ async def route_matrix(
 
     Returns {durations: [[s]], distances: [[m]]}.
     """
-    valid_profiles = {"driving", "walking", "cycling"}
-    if profile not in valid_profiles:
-        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")
+    if profile not in _VALID_PROFILES:
+        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(_VALID_PROFILES)}")
 
     src_list = _parse_coordinates(sources)
     dest_list = _parse_coordinates(destinations)
@@ -87,9 +87,8 @@ async def nearest_road(
     Returns {lat, lon, name} of the nearest road.
     """
     validate_coords(lon, lat)
-    valid_profiles = {"driving", "walking", "cycling"}
-    if profile not in valid_profiles:
-        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(valid_profiles)}")
+    if profile not in _VALID_PROFILES:
+        raise ValueError(f"Invalid profile: {profile}. Supported: {sorted(_VALID_PROFILES)}")
 
     provider = get_routing_provider()
     return await provider.nearest_road(lat, lon, profile=profile)

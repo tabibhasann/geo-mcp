@@ -14,27 +14,27 @@ from geo_mcp.units import (
 
 class TestUnitConversions:
     def test_length_km(self):
-        assert convert_length(1000, "m", "km") == 1.0
+        assert convert_length(1000, "km") == 1.0
 
     def test_length_mi(self):
-        assert convert_length(1000, "m", "mi") == pytest.approx(0.621371, rel=0.01)
+        assert convert_length(1000, "mi") == pytest.approx(0.621371, rel=0.01)
 
     def test_area_km2(self):
-        assert convert_area(1_000_000, "m2", "km2") == 1.0
+        assert convert_area(1_000_000, "km2") == 1.0
 
     def test_area_ha(self):
-        assert convert_area(10_000, "m2", "ha") == 1.0
+        assert convert_area(10_000, "ha") == 1.0
 
     def test_area_acre(self):
-        assert convert_area(1_000_000, "m2", "acre") > 200
+        assert convert_area(1_000_000, "acre") > 200
 
     def test_unknown_length_unit(self):
         with pytest.raises(ValueError, match="Unknown length unit"):
-            convert_length(100, "m", "furlong")
+            convert_length(100, "furlong")
 
     def test_unknown_area_unit(self):
         with pytest.raises(ValueError, match="Unknown area unit"):
-            convert_area(100, "m2", "barn")
+            convert_area(100, "barn")
 
 
 class TestUTMZone:

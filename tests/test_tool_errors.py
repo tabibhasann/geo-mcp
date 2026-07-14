@@ -203,11 +203,11 @@ class TestUnitsErrors:
 
     def test_convert_length_unknown_unit(self) -> None:
         with pytest.raises(ValueError, match="Unknown length unit"):
-            convert_length(100, "m", "lightyears")
+            convert_length(100, "lightyears")
 
     def test_convert_area_unknown_unit(self) -> None:
         with pytest.raises(ValueError, match="Unknown area unit"):
-            convert_area(100, "m2", "hectares2")
+            convert_area(100, "hectares2")
 
     def test_parse_geojson_invalid_json(self) -> None:
         with pytest.raises(ValueError, match="Invalid GeoJSON"):

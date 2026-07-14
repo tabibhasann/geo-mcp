@@ -58,7 +58,7 @@ def geodesic_area(geom: BaseGeometry, unit: str = "m2") -> float:
     """
     try:
         area_m2, _ = WGS84_GEOD.geometry_area_perimeter(geom)
-        return abs(convert_area(area_m2, "m2", unit))
+        return abs(convert_area(area_m2, unit))
     except Exception:
         # fallback: reproject to equal area
         lon, lat = get_centroid_lonlat(geom)
@@ -68,17 +68,17 @@ def geodesic_area(geom: BaseGeometry, unit: str = "m2") -> float:
         _transform_coords(geom_json, transformer)
         geom_proj = from_geojson(json.dumps(geom_json))
         area_m2 = geom_proj.area
-        return convert_area(area_m2, "m2", unit)
+        return convert_area(area_m2, unit)
 
 
 def geodesic_length(geom: BaseGeometry, unit: str = "m") -> float:
     """Compute geodesic length/perimeter on the WGS84 ellipsoid."""
     try:
         _, perimeter_m = WGS84_GEOD.geometry_area_perimeter(geom)
-        return convert_length(perimeter_m, "m", unit)
+        return convert_length(perimeter_m, unit)
     except Exception:
         length_m = WGS84_GEOD.geometry_length(geom)
-        return convert_length(length_m, "m", unit)
+        return convert_length(length_m, unit)
 
 
 def reproject_geom(geom: BaseGeometry, from_crs: str, to_crs: str) -> BaseGeometry:
@@ -132,7 +132,7 @@ def geodesic_distance(geom_a: BaseGeometry, geom_b: BaseGeometry, unit: str = "m
     ax, ay = get_centroid_lonlat(geom_a)
     bx, by = get_centroid_lonlat(geom_b)
     _, _, dist_m = WGS84_GEOD.inv(ax, ay, bx, by)
-    return convert_length(dist_m, "m", unit)
+    return convert_length(dist_m, unit)
 
 
 _UNIT_MAP = {
@@ -152,16 +152,16 @@ _AREA_UNIT_MAP = {
 }
 
 
-def convert_length(value_m: float, from_unit: str, to_unit: str) -> float:
-    """Convert a length from one unit to another (metre-based)."""
+def convert_length(value_m: float, to_unit: str) -> float:
+    """Convert a length in metres to the target unit."""
     factor = _UNIT_MAP.get(to_unit)
     if factor is None:
         raise ValueError(f"Unknown length unit: {to_unit}. Supported: {list(_UNIT_MAP)}")
     return value_m * factor
 
 
-def convert_area(value_m2: float, from_unit: str, to_unit: str) -> float:
-    """Convert an area from one unit to another (m²-based)."""
+def convert_area(value_m2: float, to_unit: str) -> float:
+    """Convert an area in m² to the target unit."""
     factor = _AREA_UNIT_MAP.get(to_unit)
     if factor is None:
         raise ValueError(f"Unknown area unit: {to_unit}. Supported: {list(_AREA_UNIT_MAP)}")
