@@ -41,3 +41,7 @@ GitHub Actions runs ruff, mypy, and pytest on every PR. All must pass before mer
 ## Code of Conduct
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## AI-assisted maintenance
+
+This project uses [Codex](https://openai.com/codex/) for AI-assisted PR review. The `.github/workflows/codex-review.yml` workflow triggers automated review on pull requests. Maintainers manually approve all changes — no AI-generated commits are merged without human review.
