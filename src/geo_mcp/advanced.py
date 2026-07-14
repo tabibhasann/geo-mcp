@@ -2,10 +2,12 @@
 
 import json
 from collections import OrderedDict
+from collections.abc import Callable
 from copy import deepcopy
 from numbers import Integral
 from typing import Any
 
+from shapely.geometry.base import BaseGeometry
 from shapely.strtree import STRtree
 from shapely.validation import explain_validity
 
@@ -13,7 +15,7 @@ from .errors import async_safe_tool, safe_tool
 from .geocoding import geocode
 from .geometry import parse, serialize
 
-_PREDICATES = {
+_PREDICATES: dict[str, Callable[[BaseGeometry, BaseGeometry], bool]] = {
     "intersects": lambda geom, query: geom.intersects(query),
     "within": lambda geom, query: geom.within(query),
     "contains": lambda geom, query: geom.contains(query),

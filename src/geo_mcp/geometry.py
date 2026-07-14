@@ -1,6 +1,7 @@
 """Geometry tools — local, no network operations on GeoJSON."""
 
 import json
+from collections.abc import Callable
 
 from shapely import make_valid
 from shapely.geometry.base import BaseGeometry
@@ -86,7 +87,7 @@ def bbox(geojson: str) -> list[float]:
     return [b[0], b[1], b[2], b[3]]
 
 
-_PREDICATE_OPS = {
+_PREDICATE_OPS: dict[str, Callable[[BaseGeometry, BaseGeometry], bool]] = {
     "intersects": lambda a, b: a.intersects(b),
     "within": lambda a, b: a.within(b),
     "contains": lambda a, b: a.contains(b),
