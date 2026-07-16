@@ -138,10 +138,13 @@ def _extract_coords(geojson: dict) -> list[tuple[float, float]]:
     coords = geojson.get("coordinates", [])
 
     if geom_type == "Polygon":
+        if not coords or not coords[0]:
+            raise ValueError("Polygon has no coordinates")
         return [(c[0], c[1]) for c in coords[0]]
     elif geom_type == "MultiPolygon":
-        # Use the largest polygon
-        largest = max(coords, key=lambda ring: len(ring[0]))
+        if not coords:
+            raise ValueError("MultiPolygon has no coordinates")
+        largest = max(coords, key=lambda ring: len(ring[0]) if ring else 0)
         return [(c[0], c[1]) for c in largest[0]]
     elif geom_type in ("GeometryCollection",):
         for geom in geojson.get("geometries", []):
@@ -199,12 +202,10 @@ async def osm_features(
     - Shared HTTP retry transport
     - Result validation and warnings
     """
-    import json as _json
-
-    tags_dict = tags if isinstance(tags, dict) else _json.loads(tags)
+    tags_dict = json.loads(tags) if isinstance(tags, str) else tags
     area_val = area
-    with contextlib.suppress(_json.JSONDecodeError, TypeError):
-        area_val = _json.loads(area)
+    with contextlib.suppress(json.JSONDecodeError, TypeError):
+        area_val = json.loads(area)
 
     # Check if area is a bbox and potentially too large
     if isinstance(area_val, list) and len(area_val) == 4:

@@ -14,6 +14,9 @@ class OSRMProvider(RoutingProvider):
     async def route(self, coordinates: list[list[float]], *, profile: str) -> dict:
         if is_dry_run():
             return _mock.route_result
+        for c in coordinates:
+            if len(c) != 2:
+                raise ValueError(f"Each coordinate must be [lon, lat], got {c}")
         get_quota_tracker("osrm").record()
         coords_str = ";".join(f"{lon},{lat}" for lon, lat in coordinates)
         url = f"{settings.osrm_url}/route/v1/{profile}/{coords_str}"
@@ -36,6 +39,9 @@ class OSRMProvider(RoutingProvider):
     ) -> dict:
         if is_dry_run():
             return {"durations": [[0, 900], [900, 0]], "distances": [[0, 12500], [12500, 0]]}
+        for c in sources + destinations:
+            if len(c) != 2:
+                raise ValueError(f"Each coordinate must be [lon, lat], got {c}")
         get_quota_tracker("osrm").record()
         sources_str = ";".join(f"{lon},{lat}" for lon, lat in sources)
         dests_str = ";".join(f"{lon},{lat}" for lon, lat in destinations)

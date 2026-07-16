@@ -128,7 +128,14 @@ def spatial_join(points_geojson: str, polygons_geojson: str) -> str:
     result_features = []
 
     for point_feature in points_data.get("features", []):
-        point_geom = parse(json.dumps(point_feature["geometry"]))
+        point_geometry = point_feature.get("geometry")
+        if point_geometry is None:
+            new_feature = deepcopy(point_feature)
+            new_feature["properties"] = dict(point_feature.get("properties", {}))
+            new_feature["properties"]["polygon_id"] = None
+            result_features.append(new_feature)
+            continue
+        point_geom = parse(json.dumps(point_geometry))
         polygon_id = None
 
         if tree is not None:

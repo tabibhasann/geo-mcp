@@ -40,6 +40,8 @@ class OpenElevationProvider(ElevationProvider):
             ]
         get_quota_tracker("open_elevation").record()
         for c in coordinates:
+            if len(c) < 2:
+                raise ValueError(f"Each coordinate must be [lon, lat], got {c}")
             validate_coords(c[0], c[1])
         points = [{"latitude": c[1], "longitude": c[0]} for c in coordinates]
         async with get_client() as client:
