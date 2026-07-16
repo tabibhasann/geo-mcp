@@ -16,7 +16,7 @@ from geo_mcp.geocoding import geocode, reverse_geocode
 
 async def main():
     print("Dhaka Neighborhood Analysis")
-    print("Using mcp-geo v0.2.1\n")
+    print("Using mcp-geo v0.4.0\n")
 
     # 1. Geocode three Dhaka landmarks
     print("1. Geocoding landmarks...")

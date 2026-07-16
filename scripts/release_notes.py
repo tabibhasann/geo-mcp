@@ -10,6 +10,7 @@ Requires ``gh`` (GitHub CLI) to be authenticated.
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 from datetime import datetime
 
@@ -27,27 +28,32 @@ def get_last_tag() -> str | None:
 
 
 def get_merged_prs(since_tag: str | None) -> list[dict]:
-    query = (
-        "--jq='.[] | \"\\(.number)\\t\\(.title)\\t\\(.author.login)\\t\\(.mergedAt)\"'"
-    )
-    cmd = ["gh", "pr", "list", "--state", "merged", "--limit", "100", "--json"]
+    cmd = [
+        "gh",
+        "pr",
+        "list",
+        "--state",
+        "merged",
+        "--limit",
+        "100",
+        "--json",
+        "number,title,author,mergedAt",
+    ]
     if since_tag:
         cmd += ["--search", f"merged:>={since_tag}"]
-    else:
-        cmd += []
-    cmd_str = " ".join(cmd) + " " + query
-    raw = subprocess.run(cmd_str, shell=True, capture_output=True, text=True)
-    prs = []
-    for line in raw.stdout.strip().splitlines():
-        parts = line.split("\t")
-        if len(parts) == 4:
-            prs.append({
-                "number": parts[0],
-                "title": parts[1],
-                "author": parts[2],
-                "merged_at": parts[3],
-            })
-    return prs
+    try:
+        data = json.loads(run(cmd))
+    except (json.JSONDecodeError, subprocess.CalledProcessError):
+        return []
+    return [
+        {
+            "number": str(item.get("number", "")),
+            "title": item.get("title", ""),
+            "author": (item.get("author") or {}).get("login", ""),
+            "merged_at": item.get("mergedAt", ""),
+        }
+        for item in data
+    ]
 
 
 def categorize(prs: list[dict]) -> dict[str, list[dict]]:

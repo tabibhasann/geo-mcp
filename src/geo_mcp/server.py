@@ -1,4 +1,4 @@
-"""MCP server for mcp-geo. Registers 44 geospatial tools via FastMCP."""
+"""MCP server for mcp-geo. Registers 44 MCP tools (42 geospatial + 2 meta-tools) via FastMCP."""
 
 import argparse
 import sys

@@ -1,0 +1,10 @@
+{
+  "bootstrap-sha": "9bf9f7f2692dc7c54f4edda1d2a675c674317dbd",
+  "bump-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "mcp-geo"
+    }
+  }
+}

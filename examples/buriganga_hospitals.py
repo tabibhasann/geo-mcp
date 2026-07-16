@@ -14,7 +14,7 @@ from geo_mcp.geocoding import geocode
 
 async def main():
     print("== Buriganga River Hospital Finder ==")
-    print("Using mcp-geo v0.2.0\n")
+    print("Using mcp-geo v0.4.0\n")
 
     # Step 1: Geocode the Buriganga river
     print("1. Geocoding 'Buriganga River, Dhaka'...")

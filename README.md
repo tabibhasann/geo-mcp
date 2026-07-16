@@ -1,5 +1,7 @@
 # mcp-geo
 
+> **Release status:** PyPI currently provides v0.3.0. This checkout is the v0.4.0 release candidate and must be released before users receive its newest provider and hardening work.
+
 A geospatial MCP server that gives agents dependable GIS tools: geocoding,
 routing, OpenStreetMap queries, geometry operations, file inspection, raster
 sampling, elevation, isochrones, static maps, and workspace storage.
@@ -11,7 +13,7 @@ sampling, elevation, isochrones, static maps, and workspace storage.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
 
-**Demo:** Interactive demo: https://tabibhasann.github.io/geo-mcp/
+**Demo:** Run the MCP examples below. A hosted tool gallery is pending.
 
 ```
                           +-------------------+
@@ -36,9 +38,9 @@ compose real spatial workflows instead of generating one-off scripts.
 | [CARTO MCP](https://carto.com/blog/carto-mcp-server/) | ~10 | ✅ CARTO | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ SaaS only |
 | [Felt MCP](https://felt.com/blog/mcp) | ~8 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ SaaS only |
 
-mcp-geo is the most comprehensive open-source MCP server for GIS — from geocoding
-to raster sampling to static map rendering — in a single package. Unlike CARTO and
-Felt, it requires no API keys for core functionality and can be fully self-hosted.
+mcp-geo offers a broad open-source GIS tool surface — from geocoding to raster
+sampling to static map rendering — in a single package. Its core providers do not
+require API keys, and the server can be self-hosted.
 
 Example workflow:
 
@@ -202,6 +204,18 @@ uv run pytest
 docker build -t mcp-geo .
 docker run --rm -p 8000:8000 mcp-geo mcp-geo --http --host 0.0.0.0 --port 8000
 ```
+
+## Alternatives
+
+| Tool | Type | Scope | MCP-native | Python | npm |
+|------|------|-------|-----------|--------|-----|
+| **mcp-geo** | MCP server | 44 GIS tools (geometry, geocoding, routing, raster, etc.) | Yes | Yes | No |
+| [geo-mcp-server](https://github.com/nicholishen/geo-mcp-server) | MCP server | Focused on geocoding + maps | Yes | No | Yes |
+| [QGIS](https://qgis.org) | Desktop GIS | Full desktop GIS suite | No | Plugin API | No |
+| [geopandas](https://geopandas.org) | Python library | DataFrame-style geospatial ops | No | Yes | No |
+| [shapely](https://shapely.readthedocs.io) | Python library | Low-level geometry ops | No | Yes | No |
+
+**Why mcp-geo?** It bundles the most common GIS operations (44 tools across 12 categories) behind a single MCP server so any agent can perform spatial analysis without custom integrations per tool.
 
 ## Roadmap
 
