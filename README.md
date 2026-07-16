@@ -252,6 +252,60 @@ mcp-geo tools
 mcp-geo providers
 ```
 
+<details>
+<summary>CLI output: <code>mcp-geo --help</code></summary>
+
+```
+usage: mcp-geo [-h] [--stdio | --sse | --http] [--host HOST] [--port PORT]
+               [--dry-run] [--quiet] [--version]
+               {doctor,tools,providers} ...
+
+Run the mcp-geo server.
+
+positional arguments:
+  {doctor,tools,providers}
+    doctor              Check API connectivity and configuration.
+    tools               List all available tools with descriptions.
+    providers           List configured providers.
+
+options:
+  -h, --help            show this help message and exit
+  --stdio               Run stdio transport (default).
+  --sse                 Run Server-Sent Events transport.
+  --http, --streamable-http
+                        Run streamable HTTP transport.
+  --host HOST           Host for HTTP/SSE transports.
+  --port PORT           Port for HTTP/SSE transports.
+  --dry-run             Return mock data without hitting APIs.
+  --quiet               Suppress progress/warning output (CI mode).
+  --version             show program's version number and exit
+```
+
+</details>
+
+<details>
+<summary>CLI output: <code>mcp-geo tools</code> (42 tools)</summary>
+
+```
+mcp-geo 0.4.0 — 42 tools
+
+  geometry (11):
+    buffer, distance, area, length, centroid, simplify,
+    convex_hull, bbox, spatial_predicate, transform_crs, validate_geojson
+
+  geocoding (2):
+    geocode, reverse_geocode
+
+  osm (3):
+    build_overpass_query, osm_features, overpass_query
+
+  routing (4):
+    route, route_matrix, nearest_road, isochrone
+  ...
+```
+
+</details>
+
 ### Agent Configuration (Claude Desktop)
 
 ```json

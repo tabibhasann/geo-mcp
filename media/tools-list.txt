@@ -1,0 +1,62 @@
+mcp-geo 0.4.0 — 42 tools
+
+  geometry (11):
+    buffer                    Create a metre-based buffer around a GeoJSON geometry
+    distance                  Measure geodesic distance between two GeoJSON geometries
+    area                      Calculate geodesic area for a GeoJSON geometry
+    length                    Calculate geodesic length or perimeter
+    centroid                  Return the centroid of a GeoJSON geometry
+    simplify                  Simplify geometry while preserving topology by default
+    convex_hull               Return the convex hull of a geometry
+    bbox                      Return a geometry bounding box
+    spatial_predicate         Evaluate spatial relationships such as intersects, contains, or within
+    transform_crs             Reproject GeoJSON between coordinate reference systems
+    validate_geojson          Validate GeoJSON and return repair information when possible
+
+  geocoding (2):
+    geocode                   Convert a place name or address to coordinates
+    reverse_geocode           Convert coordinates to a structured address
+
+  osm (3):
+    build_overpass_query      Build a safe Overpass QL query without executing it
+    osm_features              Query OpenStreetMap features and return GeoJSON
+    overpass_query            Execute raw Overpass QL and return GeoJSON
+
+  routing (4):
+    route                     Calculate a route between waypoints using OSRM
+    route_matrix              Build duration and distance matrices between points
+    nearest_road              Snap a coordinate to the nearest road
+    isochrone                 Calculate reachable area from a point using OpenRouteService
+
+  elevation (2):
+    elevation                 Get elevation at one coordinate
+    elevation_profile         Get elevation along a path
+
+  files (5):
+    vector_info               Inspect vector files such as GeoJSON, Shapefile, and GeoPackage
+    vector_read               Read vector file features as GeoJSON
+    raster_info               Inspect raster files such as GeoTIFF
+    sample_raster             Sample raster values at points
+    zonal_stats               Summarize raster values inside polygon zones
+
+  advanced (8):
+    build_spatial_index       Build spatial-index metadata for a FeatureCollection
+    spatial_query             Filter a FeatureCollection with a spatial predicate
+    spatial_join              Attach containing polygon IDs to point features
+    nearest_neighbor          Find nearest features to a query geometry
+    batch_geocode             Geocode many addresses with in-process caching
+    cached_geocode            Geocode one address through the in-process cache
+    repair_geometry           Repair invalid polygon geometry when possible
+    validate_geometry         Validate a geometry and explain geometry issues
+
+  workspace (5):
+    workspace_store           Store intermediate JSON data by name
+    workspace_get             Retrieve a stored workspace item
+    workspace_list            List stored workspace items
+    workspace_clear           Clear one workspace item or the entire workspace
+    workspace_rename          Rename a workspace item
+
+  visualization (2):
+    static_map                Render GeoJSON as a base64 PNG
+    save_map                  Render GeoJSON and save it as a PNG file
+

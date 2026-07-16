@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type": "Feature", "properties": {"name": "Lalbagh Fort", "category": "historic"}, "geometry": {"type": "Point", "coordinates": [90.3215, 23.7165]}},
+    {"type": "Feature", "properties": {"name": "Ahsan Manzil", "category": "historic"}, "geometry": {"type": "Point", "coordinates": [90.4062, 23.7158]}},
+    {"type": "Feature", "properties": {"name": "National Museum", "category": "culture"}, "geometry": {"type": "Point", "coordinates": [90.3934, 23.7336]}},
+    {"type": "Feature", "properties": {"name": "Dhaka University", "category": "education"}, "geometry": {"type": "Point", "coordinates": [90.3995, 23.7335]}},
+    {"type": "Feature", "properties": {"name": "Hatirjheel Lake", "category": "park"}, "geometry": {"type": "Point", "coordinates": [90.4125, 23.7500]}}
+  ]
+}

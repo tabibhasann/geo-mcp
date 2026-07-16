@@ -1,0 +1,11 @@
+mcp-geo 0.4.0 — doctor
+
+  ✓ Nominatim (geocoding): HTTP 200
+  ✓ OSRM (routing): HTTP 400
+  ✓ Overpass (OSM queries): HTTP 400
+
+  ORS API key: not set (isochrones disabled)
+  Rate limit:  1.0 req/s (Nominatim)
+  Retries:     3
+
+  All checks passed.
