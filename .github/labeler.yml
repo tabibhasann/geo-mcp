@@ -1,25 +1,35 @@
 documentation:
-  - '**/*.md'
-  - 'docs/**'
-  - '.github/**/*.md'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
+          - '.github/**/*.md'
 
 dependencies:
-  - 'package-lock.json'
-  - 'package.json'
-  - 'pyproject.toml'
-  - 'requirements*.txt'
-  - 'poetry.lock'
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package-lock.json'
+          - 'package.json'
+          - 'pyproject.toml'
+          - 'requirements*.txt'
+          - 'poetry.lock'
 
 tests:
-  - 'test/**'
-  - 'tests/**'
-  - '**/*.test.*'
-  - '**/*.spec.*'
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'test/**'
+          - 'tests/**'
+          - '**/*.test.*'
+          - '**/*.spec.*'
 
 ci:
-  - '.github/workflows/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
 
 source:
-  - 'src/**'
-  - 'lib/**'
-  - 'bin/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/**'
+          - 'lib/**'
+          - 'bin/**'
