@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html/).
 
+## [0.5.0](https://github.com/tabibhasann/geo-mcp/compare/mcp-geo-v0.4.0...mcp-geo-v0.5.0) (2026-07-17)
+
+
+### Features
+
+* add coverage, error tests, type hints, comparison tables, lint fixes ([113719a](https://github.com/tabibhasann/geo-mcp/commit/113719a47c2993f2ddf6d8a91b65833a618cb43c))
+
+
+### Bug Fixes
+
+* add coordinate validation and guard empty MultiPolygon ([fa54ab3](https://github.com/tabibhasann/geo-mcp/commit/fa54ab31cea9b6fd3e5398b48bf243dc0969c8f8))
+
+
+### Documentation
+
+* add CLI screenshots, sample data, and README updates ([310e8cd](https://github.com/tabibhasann/geo-mcp/commit/310e8cd153d0c608a0c7557eedcccf95abd46d72))
+
 ## [0.4.0] - 2026-06-18
 
 ### Added
